@@ -183,6 +183,33 @@ def label(name, txt, loc, size, c):
     c.objects.link(ob)
     return ob
 
+def percer(ob, centre, axe, r, longueur=0.2):
+    """Perce un trou cylindrique dans un objet (booleen applique, sans objet de coupe restant)."""
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, cap_tris=False, segments=40, radius1=r, radius2=r, depth=longueur)
+    me_c = bpy.data.meshes.new("coupe")
+    bm.to_mesh(me_c)
+    bm.free()
+    cut = bpy.data.objects.new("coupe", me_c)
+    scene.collection.objects.link(cut)
+    cut.location = centre
+    cut.rotation_mode = 'QUATERNION'
+    cut.rotation_quaternion = Vector((0, 0, 1)).rotation_difference(Vector(axe))
+    md = ob.modifiers.new("trou", 'BOOLEAN')
+    md.operation = 'DIFFERENCE'
+    md.object = cut
+    bpy.context.view_layer.update()
+    dg = bpy.context.evaluated_depsgraph_get()
+    neuf = bpy.data.meshes.new_from_object(ob.evaluated_get(dg))
+    ancien = ob.data
+    ob.modifiers.remove(md)
+    ob.data = neuf
+    neuf.name = ancien.name
+    bpy.data.meshes.remove(ancien)
+    bpy.data.objects.remove(cut)
+    bpy.data.meshes.remove(me_c)
+
+
 def frame(prefix, X, hx, hy, h, c, y0=0.0, rails=(None,)):
     """4 pieds en corniere 40x40 + ceintures horizontales aux hauteurs 'rails'."""
     for sx in (-1, 1):
@@ -234,9 +261,9 @@ def reactor(tag, X, side, cut, co2, liq_rgb=(0.92, 0.93, 0.95), liq_alpha=0.45):
     lathe(tag + "_habillage_tole",
           [(R + 0.050, Z0 + 0.105), (R + 0.052, Z0 + 0.105), (R + 0.052, Z0 + 0.395), (R + 0.050, Z0 + 0.395)],
           M_TOLE, c, (X, 0, 0), st, sw)
-    lathe(tag + "_couvercle",
-          [(0.011, Z0 + H), (R + 0.006, Z0 + H), (R + 0.006, Z0 + H + 0.003), (0.011, Z0 + H + 0.003)],
-          M_INOX, c, (X, 0, 0), st, sw)
+    couv = lathe(tag + "_couvercle",
+                 [(0.011, Z0 + H), (R + 0.006, Z0 + H), (R + 0.006, Z0 + H + 0.003), (0.011, Z0 + H + 0.003)],
+                 M_INOX, c, (X, 0, 0), st, sw)
 
     # agitateur
     box(tag + "_reducteur", (0.10, 0.10, 0.08), (X, 0, 1.488), M_MOTEUR, c)
@@ -257,8 +284,14 @@ def reactor(tag, X, side, cut, co2, liq_rgb=(0.92, 0.93, 0.95), liq_alpha=0.45):
     zc = Z0 + H + 0.003
     rod(tag + "_doigt_de_gant_sonde", pol(0.14, 180, Z0 + 0.08), pol(0.14, 180, zc + 0.06), 0.005, M_INOX, c)
     box(tag + "_tete_sonde", (0.04, 0.04, 0.04), pol(0.14, 180, zc + 0.08), M_COFFRET, c)
-    rod(tag + "_trappe_chargement_D90", pol(0.125, 345, zc), pol(0.125, 345, zc + 0.03), 0.045, M_INOX, c, 32)
-    ball(tag + "_bouton_trappe", 0.012, pol(0.125, 345, zc + 0.04), M_NOIR, c)
+    # trappe de chargement D76 : trou dans le couvercle, collerette, couvercle a charniere (cote exterieur)
+    hc = pol(0.125, 345, zc)
+    percer(couv, hc, (0, 0, 1), 0.038, 0.05)
+    lathe(tag + "_trappe_collerette", [(0.038, 0), (0.046, 0), (0.046, 0.03), (0.038, 0.03)], M_INOX, c,
+          (hc[0], hc[1], zc - 0.003))
+    rod(tag + "_trappe_couvercle", (hc[0], hc[1], zc + 0.027), (hc[0], hc[1], zc + 0.033), 0.050, M_INOX, c, 32)
+    ball(tag + "_trappe_bouton", 0.012, (hc[0], hc[1], zc + 0.043), M_NOIR, c)
+    rod(tag + "_trappe_charniere", pol(0.177, 336, zc + 0.030), pol(0.177, 354, zc + 0.030), 0.005, M_INOX, c, 12)
     v0, v1 = pol(0.13, 150, Z0 + H), pol(0.13, 150, 1.62)
     rod(tag + "_event_D25", v0, v1, 0.0125, M_INOX, c)
     ball(tag + "_coude_event", 0.0125, v1, M_INOX, c)
@@ -352,6 +385,21 @@ def filtre(X):
          0.007, M_NOIR, c)
     hose("F_tuyau_vide_b", [(tx + 0.03, y, 0.275), (tx + 0.08, y, 0.35),
                             (entree[0] - 0.03, entree[1], entree[2] + 0.07), entree], 0.007, M_NOIR, c)
+
+    # vanne de vidange du fut recepteur + petite pompe de transfert (liqueur -> R2)
+    rod("F_piquage_vidange", (X + 0.185, 0, 0.10), (X + 0.25, 0, 0.10), 0.010, M_INOX, c)
+    ball("F_vanne_vidange", 0.02, (X + 0.225, 0, 0.10), M_INOX, c)
+    box("F_poignee_vidange", (0.012, 0.07, 0.005), (X + 0.225, -0.02, 0.128), M_ROUGE, c)
+    rod("F_embout_vidange", (X + 0.25, 0, 0.10), (X + 0.27, 0, 0.10), 0.006, M_INOX, c, 12)
+    qx, qy = X + 0.36, -0.30
+    box("F_transfert_socle", (0.22, 0.10, 0.012), (qx, qy, 0.012), M_PANNEAU, c)
+    rod("F_transfert_moteur", (qx - 0.02, qy, 0.07), (qx + 0.10, qy, 0.07), 0.045, M_MOTEUR, c, 32)
+    rod("F_transfert_corps", (qx - 0.08, qy, 0.07), (qx - 0.02, qy, 0.07), 0.055, M_INOX, c, 32)
+    box("F_transfert_pattes", (0.16, 0.06, 0.02), (qx, qy, 0.026), M_MOTEUR, c)
+    rod("F_transfert_aspiration", (qx - 0.08, qy, 0.07), (qx - 0.11, qy, 0.07), 0.008, M_INOX, c, 12)
+    rod("F_transfert_refoulement", (qx - 0.05, qy, 0.125), (qx - 0.05, qy, 0.16), 0.008, M_INOX, c, 12)
+    hose("F_tuyau_vidange_pompe", [(X + 0.27, 0, 0.10), (X + 0.30, -0.10, 0.06),
+                                    (qx - 0.16, qy, 0.05), (qx - 0.11, qy, 0.07)], 0.009, M_NOIR, c)
     return c
 
 # ================================================================== BROYEUR A0
@@ -525,6 +573,39 @@ def broyeur_reel(X):
     circ = [(RD + 0.008 + 0.006 * math.cos(t), 0.199 + 0.006 * math.sin(t)) for t in [i * math.tau / 10 for i in range(10)]]
     lathe("A0_cercle_fermeture", circ, M_INOX, c, (X, 0, ZD), rot=rotY)
     box("A0_levier_cercle", (0.03, 0.02, 0.05), (X + 0.199, -0.02, ZD + RD + 0.02), M_INOX, c)
+    # charniere verticale du couvercle (cote arriere) : le couvercle s'ouvre comme une porte
+    rod("A0_charniere_couvercle", (X + 0.208, RD + 0.012, ZD - 0.03), (X + 0.208, RD + 0.012, ZD + 0.03),
+        0.007, M_INOX, c, 12)
+    box("A0_charniere_patte", (0.03, 0.012, 0.05), (X + 0.19, RD + 0.006, ZD), M_INOX, c)
+
+    # bac de recuperation de la poudre (pose au sol, a droite devant)
+    lathe("A0_bac_poudre", [(0, 0), (0.10, 0), (0.12, 0.22), (0.117, 0.22), (0.097, 0.003), (0, 0.003)],
+          M_TOLE, c, (X + 0.65, -0.45, 0))
+
+    # chariot de chargement : tremie + goulotte inclinee a 44 degres, gare a droite du broyeur
+    # (en service, le bout de la goulotte entre dans l'ouverture du fut : on le recule de 0,40 m)
+    pk = 0.40
+    tip = Vector((X + 0.13 + pk, 0, 0.56))
+    d = Vector((math.cos(math.radians(44)), 0, math.sin(math.radians(44))))
+    n = Vector((-d.z, 0, d.x))
+    L = 0.45
+    mid = tip + d * (L / 2)
+    rg = (0, math.radians(-44), 0)
+    box("A0_goulotte_fond", (L, 0.12, 0.003), mid, M_INOX, c, rot=rg)
+    for sy in (-1, 1):
+        box("A0_goulotte_joue", (L, 0.003, 0.05), mid + Vector((0, sy * 0.06, 0)) + n * 0.025, M_INOX, c, rot=rg)
+    top = tip + d * L
+    lathe("A0_tremie", [(0.085, 0), (0.089, 0), (0.212, 0.15), (0.208, 0.15)], M_INOX, c,
+          (top.x + 0.015, 0, top.z - 0.012), 45, 360, 4)
+    px = tip.x + 0.27
+    pz = tip.z + (0.27 / d.x) * d.z - 0.01
+    rod("A0_chariot_poteau", (px, 0, 0.05), (px, 0, pz), 0.018, M_CHASSIS, c, 16)
+    box("A0_chariot_support", (0.06, 0.10, 0.02), (px, 0, pz), M_CHASSIS, c)
+    box("A0_chariot_base", (0.30, 0.26, 0.02), (px, 0, 0.045), M_CHASSIS, c)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            rod("A0_chariot_roulette", (px + sx * 0.12, sy * 0.10 - 0.012, 0.018),
+                (px + sx * 0.12, sy * 0.10 + 0.012, 0.018), 0.018, M_NOIR, c, 16)
 
     # motoreducteur sur l'etagere
     ym, zm = -0.10, 0.25
@@ -587,6 +668,12 @@ def four_moufle(X):
     # table en corniere + plateau
     frame("K_table", X, 0.30, 0.26, 0.45, c, rails=(0.12, 0.43))
     box("K_plateau_table", (0.64, 0.56, 0.008), (X, 0, 0.454), M_CHASSIS, c)
+
+    # table de preparation a droite : son plateau est a la hauteur de la sole du four
+    # (le creuset glisse a plat de la table jusque dans la chambre)
+    xt, yt = X + 0.60, -0.10
+    frame("K_table_prep", xt, 0.18, 0.18, 0.62, c, y0=yt, rails=(0.15, 0.60))
+    box("K_plateau_prep", (0.40, 0.40, 0.006), (xt, yt, 0.625), M_TOLE, c)
 
     z0, H, D = 0.478, 0.50, 0.46
     y0, y1 = -D / 2, D / 2
@@ -714,6 +801,15 @@ reactor("R1_Attaque", X_R1, +1, cut=True, co2=False, liq_rgb=(0.40, 0.10, 0.05),
 filtre(X_F)
 reactor("R2_Precipitation", X_R2, -1, cut=True, co2=True)
 four_moufle(X_K)
+
+# arrivee d'eau : colonne galvanisee + robinet, derriere a gauche de R1
+c_eau = coll("Arrivee_eau")
+rx, ry = X_R1 - 0.70, 0.35
+box("Robinet_socle", (0.12, 0.12, 0.01), (rx, ry, 0.005), M_CHASSIS, c_eau)
+rod("Robinet_colonne", (rx, ry, 0.01), (rx, ry, 0.88), 0.016, M_TOLE, c_eau, 16)
+rod("Robinet_corps", (rx, ry, 0.86), (rx, ry - 0.06, 0.86), 0.014, M_INOX, c_eau, 16)
+rod("Robinet_bec", (rx, ry - 0.06, 0.86), (rx, ry - 0.06, 0.83), 0.009, M_INOX, c_eau, 12)
+box("Robinet_manette", (0.06, 0.012, 0.008), (rx, ry - 0.03, 0.885), M_ROUGE, c_eau)
 
 env = coll("Atelier")
 box("Sol", (7.6, 3.6, 0.02), (0.1, 0, -0.011), M_SOL, env)

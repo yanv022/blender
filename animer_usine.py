@@ -1,15 +1,19 @@
-# Animation du procede bauxite -> alumine (60 s a 24 images/s), sur le modele realiste.
-# Reconstruit la scene (construire_usine.py + materiaux_realistes.py) puis ajoute les images cles.
-# A lancer depuis Blender (onglet Scripting) ; les deux autres scripts doivent etre dans le meme dossier.
+# Animation du procede bauxite -> alumine, sur le modele realiste (~105 s a 24 images/s).
+# Chaque produit entre et sort par une vraie ouverture : couvercle du fut + chariot a tremie,
+# trappes a charniere de R1 et R2, vannes et tuyaux, porte du four.
+# A lancer depuis Blender (onglet Scripting) ; construire_usine.py et materiaux_realistes.py
+# doivent etre dans le meme dossier.
 
 import bpy, bmesh, math, os, random
 from mathutils import Vector, Matrix
 
 BASE = os.path.dirname(globals().get("__file__") or bpy.data.filepath)
 
+
 def _executer(nom, espace):
     chemin = os.path.join(BASE, nom)
     exec(compile(open(chemin, encoding="utf-8").read(), chemin, "exec"), espace)
+
 
 ns = {"__name__": "build"}
 _executer("construire_usine.py", ns)
@@ -18,16 +22,19 @@ lathe, rod, ball, box, mat, coll, hose = (ns[k] for k in ("lathe", "rod", "ball"
 X_A0, X_R1, X_F, X_R2, X_K = (ns[k] for k in ("X_A0", "X_R1", "X_F", "X_R2", "X_K"))
 D = bpy.data.objects
 sc = bpy.context.scene
-sc.frame_start, sc.frame_end = 1, 1440
+sc.frame_start, sc.frame_end = 1, 2520
 sc.render.fps = 24
 sim = coll("SIM_Animation")
 rad = math.radians
+rnd = random.Random(3)
 
 # ------------------------------------------------------------------ outils
 _reg = {}        # id -> {(chemin, image): interpolation}, applique a la fin
 
+
 def reg(idb, path, f, kind):
     _reg.setdefault(idb, {})[(path, int(f))] = kind
+
 
 def all_fcurves(idb):
     ad = getattr(idb, "animation_data", None)
@@ -43,30 +50,46 @@ def all_fcurves(idb):
         out.extend(act.fcurves)
     return out
 
+
 def apply_interpolations():
     for idb, keys in _reg.items():
         for fc in all_fcurves(idb):
             for kp in fc.keyframe_points:
                 fr = int(round(kp.co.x))
                 kind = keys.get((fc.data_path, fr)) or keys.get((None, fr))
-                if kind:
+                if kind == 'DOUX':              # depart et arrivee en douceur, trajet droit
+                    kp.interpolation = 'SINE'
+                    kp.easing = 'EASE_IN_OUT'
+                elif kind:
                     kp.interpolation = kind
             fc.update()
 
-def kloc(ob, f, loc, kind='BEZIER'):
+
+def kloc(ob, f, loc, kind='DOUX'):
     ob.location = loc
     ob.keyframe_insert("location", frame=f)
     reg(ob, "location", f, kind)
+
 
 def kscale(ob, f, s, kind='LINEAR'):
     ob.scale = (s, s, s) if isinstance(s, (int, float)) else s
     ob.keyframe_insert("scale", frame=f)
     reg(ob, "scale", f, kind)
 
-def krot(ob, f, e, kind='LINEAR'):
+
+def krot(ob, f, e, kind='DOUX'):
     ob.rotation_euler = e
     ob.keyframe_insert("rotation_euler", frame=f)
     reg(ob, "rotation_euler", f, kind)
+
+
+def porter(ob, etapes):
+    """Deplacement en lignes droites avec depart/arrivee doux : [(image, position, rotation ou None)]."""
+    for f, p, r in etapes:
+        kloc(ob, f, p)
+        if r is not None:
+            krot(ob, f, r)
+
 
 def level(ob, pairs):
     """Niveau d'un liquide ou d'un gateau : echelle Z, objet cache quand il est vide."""
@@ -76,15 +99,16 @@ def level(ob, pairs):
         prv = pairs[i - 1][1] if i > 0 else 0
         if s > 0:
             kscale(ob, f, (1, 1, s), 'LINEAR')
-        elif nxt > 0:                       # debut de remplissage
+        elif nxt > 0:
             if f > 1:
                 kscale(ob, f - 1, 0, 'CONSTANT')
             kscale(ob, f, (1, 1, 0.002), 'LINEAR')
-        elif prv > 0:                       # fin de vidange
+        elif prv > 0:
             kscale(ob, f, (1, 1, 0.002), 'CONSTANT')
             kscale(ob, f + 1, 0, 'CONSTANT')
         else:
             kscale(ob, f, 0, 'CONSTANT')
+
 
 def visible(ob, f_on, f_off=None):
     """Objet invisible (echelle 0) sauf entre f_on et f_off."""
@@ -93,6 +117,7 @@ def visible(ob, f_on, f_off=None):
     kscale(ob, f_on, 1, 'CONSTANT')
     if f_off:
         kscale(ob, f_off, 0, 'CONSTANT')
+
 
 def kmat(m, f, rgb, alpha, kind='LINEAR'):
     reg(m.node_tree, None, f, kind)
@@ -105,12 +130,22 @@ def kmat(m, f, rgb, alpha, kind='LINEAR'):
     m.diffuse_color = (*rgb, alpha)
     m.keyframe_insert("diffuse_color", frame=f)
 
-def empty(name, loc):
+
+def kemission(m, f, v):
+    entree = next(n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED").inputs["Emission Strength"]
+    entree.default_value = v
+    entree.keyframe_insert("default_value", frame=f)
+    reg(m.node_tree, None, f, 'CONSTANT')
+
+
+def empty(name, loc, rot=(0, 0, 0)):
     ob = bpy.data.objects.new(name, None)
     ob.location = loc
+    ob.rotation_euler = rot
     ob.empty_display_size = 0.04
     sim.objects.link(ob)
     return ob
+
 
 def adopt(par, children):
     bpy.context.view_layer.update()
@@ -119,135 +154,328 @@ def adopt(par, children):
         ch.parent = par
         ch.matrix_parent_inverse = inv
 
+
 def named(prefix):
     return [o for o in D if o.name.startswith(prefix)]
+
 
 def spin(ob, f0, f1, axis, deg_per_frame):
     e0 = [0, 0, 0]
     e1 = [0, 0, 0]
     e1[axis] = rad(deg_per_frame * (f1 - f0))
-    krot(ob, f0, e0)
-    krot(ob, f1, e1)
+    krot(ob, f0, e0, 'LINEAR')
+    krot(ob, f1, e1, 'LINEAR')
+
+
+def flux(nom, chemin, n, f0, f1, fabrique, periode=16, jitter=0.012):
+    """n petits objets qui parcourent 'chemin' en boucle entre f0 et f1 (versement, ecoulement)."""
+    rr = random.Random(len(nom) * 97 + f0)
+    pts = [Vector(p) for p in chemin]
+    for i in range(n):
+        ob = fabrique(nom, pts[0])
+        visible(ob, f0, f1)
+        f = f0 + int(i * periode / n)
+        while f < f1:
+            j = Vector((rr.uniform(-jitter, jitter), rr.uniform(-jitter, jitter), 0))
+            for k, p in enumerate(pts):
+                fk = f + periode - 1 if k == len(pts) - 1 else f + round(k * periode / (len(pts) - 1))
+                kloc(ob, fk, p + j, 'LINEAR' if k < len(pts) - 1 else 'CONSTANT')
+            f += periode
+
+
+def bascule(r, h, angle=-110):
+    """Decalage du point de versement (bord le plus bas) d'un recipient r x h incline autour de X."""
+    a = rad(angle)
+    return Vector((0, r * math.cos(a) - h * math.sin(a), r * math.sin(a) + h * math.cos(a)))
+
+
+rnd2 = random.Random(11)
+
+
+def caillou(name, loc, r=None):
+    r = r or rnd2.uniform(0.016, 0.026)
+    bm = bmesh.new()
+    bmesh.ops.create_icosphere(bm, subdivisions=1, radius=r)
+    for v in bm.verts:
+        v.co *= rnd2.uniform(0.75, 1.2)
+    bmesh.ops.scale(bm, vec=(1.0, rnd2.uniform(0.7, 1.0), rnd2.uniform(0.6, 0.9)), verts=bm.verts)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    me.materials.append(ns["M_BAUX"])
+    ob = bpy.data.objects.new(name, me)
+    sim.objects.link(ob)
+    ob.location = loc
+    ob.rotation_euler = (rnd2.uniform(0, 6.3), rnd2.uniform(0, 6.3), rnd2.uniform(0, 6.3))
+    return ob
+
+
+def bille(name, loc):
+    return ball(name, 0.016, loc, ns["M_INOX"], sim)
+
+
+def flocon(name, loc):
+    return box(name, (0.012, 0.009, 0.004), loc, ns["M_BLANC"], sim,
+               rot=(rnd2.uniform(0, 3), rnd2.uniform(0, 3), rnd2.uniform(0, 3)))
+
 
 EAU    = ((0.60, 0.80, 0.95), 0.35)
 PULPE  = ((0.40, 0.10, 0.05), 0.96)
 AMBRE  = ((0.85, 0.55, 0.15), 0.50)
 LAIT   = ((0.96, 0.96, 0.95), 0.96)
 PALE   = ((0.75, 0.86, 0.92), 0.40)
+Z0 = 0.90                                  # fond des cuves R1 et R2
+ZD = 0.625                                 # axe du fut du broyeur
+M_EAU = mat("SIM_jet_eau", EAU[0], 0, 0.1, alpha=0.55)
+M_J_AMBRE = mat("SIM_jet_ambre", AMBRE[0], 0, 0.2, alpha=0.8)
+M_TUYAU = mat("SIM_tuyau_arrosage", (0.03, 0.20, 0.04), 0, 0.45)
 
-# ================================================================== 1. BROYAGE (40-200)
-ZD = 0.625
-e_fut = empty("SIM_rot_fut", (X_A0, 0, ZD))
-e_lid = empty("SIM_couvercle_fut", (X_A0 + 0.205, 0, ZD))      # couvercle amovible (chargement)
+# ================================================================== 1. ENTREE dans le broyeur (40-380)
+# fut + couvercle a charniere verticale (le couvercle s'ouvre comme une porte)
+e_fut = empty("SIM_fut", (X_A0, 0, ZD))
+e_lid = empty("SIM_charniere_couvercle_fut", (X_A0 + 0.208, 0.152, ZD))   # charniere a l'arriere
 adopt(e_lid, named("A0_couvercle") + named("A0_cercle") + named("A0_levier"))
-adopt(e_fut, named("A0_fut") + named("A0_bourrelet") + [e_lid])
-spin(e_fut, 40, 200, 0, -8)
+grille = []                                # grille de vidange (retient les billes)
+for k in range(-3, 4):
+    corde = 2 * math.sqrt(max(0.136 ** 2 - (k * 0.034) ** 2, 0.0))
+    grille.append(box("SIM_grille_vidange", (0.004, 0.006, corde), (X_A0 + 0.185, k * 0.034, ZD), ns["M_TOLE"], sim))
+    grille.append(box("SIM_grille_vidange", (0.004, corde, 0.006), (X_A0 + 0.185, 0, ZD + k * 0.034), ns["M_TOLE"], sim))
+adopt(e_fut, named("A0_fut") + named("A0_bourrelet") + named("A0_charniere") + [e_lid] + grille)
 
-# ================================================================== 2. CHARGEMENT de R1 (200-290)
-Z0 = 0.90
-seau = lathe("SIM_seau", [(0, 0), (0.09, 0), (0.10, 0.16), (0.097, 0.16), (0.087, 0.003), (0, 0.003)],
-             ns["M_COFFRET"], sim, (X_A0 + 0.12, -0.50, 0.0))
-poudre = lathe("SIM_poudre_bauxite", [(0, 0), (0.087, 0), (0.094, 0.12), (0, 0.12)],
-               ns["M_BAUX"], sim, (X_A0 + 0.12, -0.50, 0.003))
-adopt(seau, [poudre])
-kscale(seau, 1, 0, 'CONSTANT')
-kscale(seau, 200, 0, 'LINEAR')
-kscale(seau, 206, 1, 'CONSTANT')
-kscale(seau, 296, 0, 'CONSTANT')
-kloc(seau, 206, (X_A0 + 0.12, -0.50, 0.0))
-kloc(seau, 228, (-1.6, -0.75, 1.75))
-kloc(seau, 250, (X_R1 + 0.121, -0.25, 1.55))
-krot(seau, 252, (0, 0, 0), 'BEZIER')
-krot(seau, 264, (rad(-110), 0, 0), 'BEZIER')
-krot(seau, 286, (rad(-110), 0, 0), 'BEZIER')
-krot(seau, 294, (0, 0, 0), 'BEZIER')
-kscale(poudre, 262, (1, 1, 1))
-kscale(poudre, 286, (1, 1, 0.02))
-jet_p = rod("SIM_jet_poudre", (X_R1 + 0.121, -0.09, 1.48), (X_R1 + 0.121, -0.035, 1.335), 0.014, ns["M_BAUX"], sim)
-visible(jet_p, 264, 286)
+for f, a in ((1, 0), (50, 0), (66, 115), (362, 115), (378, 0),
+             (565, 0), (580, 115), (762, 115), (778, 0)):
+    krot(e_lid, f, (0, 0, rad(a)))
 
-# ================================================================== 3-4. ATTAQUE et DECANTATION dans R1
+# chariot a tremie : il roule de sa place de garage jusqu'a l'ouverture du fut, puis repart
+e_cart = empty("SIM_chariot", (X_A0 + 0.80, 0, 0))
+adopt(e_cart, named("A0_goulotte") + named("A0_tremie") + named("A0_chariot"))
+for f, x in ((1, 0.80), (66, 0.80), (90, 0.40), (340, 0.40), (362, 0.80)):
+    kloc(e_cart, f, (X_A0 + x, 0, 0))
+
+# trajet des morceaux : tremie -> goulotte -> fond du fut
+P_TREMIE = Vector((X_A0 + 0.469, -0.04, 1.12))
+GLISSE = [P_TREMIE, (X_A0 + 0.469, -0.01, 0.99), (X_A0 + 0.44, 0, 0.887), (X_A0 + 0.116, 0, 0.574),
+          (X_A0 - 0.02, 0, 0.515)]
+
+# seau de bauxite brute (morceaux)
+BX, BY = X_A0 - 0.14, -0.50
+seau_b = lathe("SIM_seau_bauxite_brute", [(0, 0), (0.09, 0), (0.105, 0.17), (0.10, 0.17), (0.086, 0.004), (0, 0.004)],
+               ns["M_NOIR"], sim, (BX, BY, 0))
+tas = []
+for i in range(18):
+    a_ = rnd2.uniform(0, math.tau)
+    rr_ = rnd2.uniform(0, 0.055)
+    tas.append(caillou("SIM_bauxite_brute", (BX + rr_ * math.cos(a_), BY + rr_ * math.sin(a_),
+                                             0.035 + (i // 6) * 0.05 + rnd2.uniform(0, 0.02)), rnd2.uniform(0.022, 0.034)))
+adopt(seau_b, tas)
+o_seau = P_TREMIE - bascule(0.105, 0.17)
+porter(seau_b, [(1, (BX, BY, 0), (0, 0, 0)), (92, (BX, BY, 0), None), (108, (BX, BY, 1.32), None),
+                (128, (o_seau.x, o_seau.y, 1.32), (0, 0, 0)), (134, o_seau, None), (146, o_seau, (rad(-110), 0, 0)),
+                (196, o_seau, (rad(-110), 0, 0)), (208, o_seau, (0, 0, 0)), (214, (o_seau.x, o_seau.y, 1.32), None),
+                (232, (BX, BY, 1.32), None), (246, (BX, BY, 0), None)])
+for i, ob in enumerate(tas):                      # le tas se vide pendant le versement
+    visible(ob, 1, 148 + i * 3)
+flux("SIM_flux_bauxite", GLISSE, 9, 146, 198, caillou, periode=24)
+
+# bac de billes d'acier
+TX, TY = X_A0 + 0.30, -0.45
+bac_b = lathe("SIM_bac_billes", [(0, 0), (0.075, 0), (0.085, 0.06), (0.082, 0.06), (0.072, 0.003), (0, 0.003)],
+              ns["M_TOLE"], sim, (TX, TY, 0))
+tas_b = []
+for i in range(10):
+    a_ = rnd2.uniform(0, math.tau)
+    rr_ = rnd2.uniform(0, 0.045)
+    tas_b.append(bille("SIM_bille_tas", (TX + rr_ * math.cos(a_), TY + rr_ * math.sin(a_), 0.02 + (i // 5) * 0.025)))
+adopt(bac_b, tas_b)
+o_bac = P_TREMIE - bascule(0.085, 0.06)
+porter(bac_b, [(1, (TX, TY, 0), (0, 0, 0)), (246, (TX, TY, 0), None), (258, (TX, TY, 1.24), None),
+               (274, (o_bac.x, o_bac.y, 1.24), (0, 0, 0)), (278, o_bac, None), (288, o_bac, (rad(-110), 0, 0)),
+               (318, o_bac, (rad(-110), 0, 0)), (326, o_bac, (0, 0, 0)), (330, (o_bac.x, o_bac.y, 1.24), None),
+               (344, (TX, TY, 1.24), None), (356, (TX, TY, 0), None)])
+for i, ob in enumerate(tas_b):
+    visible(ob, 1, 290 + i * 3)
+flux("SIM_flux_billes", GLISSE, 6, 288, 320, bille, periode=22)
+
+# ================================================================== 2. BROYAGE (380-560) : 4 tours exacts
+spin(e_fut, 380, 560, 0, -8)
+ROT_FIN = rad(-8 * 180)
+
+# ================================================================== 3. VIDANGE (565-780) : grille, fut incline au-dessus du bac
+for ob in grille:
+    visible(ob, 580, 760)
+BAC = Vector((X_A0 + 0.65, -0.45, 0))
+haut = 0.95
+for f, p, ry in ((585, (X_A0, 0, ZD), 0), (600, (X_A0, 0, haut), 0), (620, (BAC.x, BAC.y, haut), 0),
+                 (636, (BAC.x, BAC.y, haut), 90), (648, (BAC.x, BAC.y, 0.55), 90), (700, (BAC.x, BAC.y, 0.55), 90),
+                 (712, (BAC.x, BAC.y, haut), 90), (728, (BAC.x, BAC.y, haut), 0), (748, (X_A0, 0, haut), 0),
+                 (760, (X_A0, 0, ZD), 0)):
+    kloc(e_fut, f, p)
+    krot(e_fut, f, (ROT_FIN, rad(ry), 0))
+jet_a0 = rod("SIM_flux_poudre_vidange", (BAC.x, BAC.y, 0.35), (BAC.x, BAC.y, 0.06), 0.022, ns["M_BAUX"], sim)
+visible(jet_a0, 650, 700)
+
+e_bin = empty("SIM_bac_poudre", BAC)
+poudre_bin = lathe("SIM_poudre_dans_bac", [(0, 0), (0.10, 0), (0.111, 0.11), (0, 0.11)], ns["M_BAUX"], sim,
+                   (BAC.x, BAC.y, 0.004))
+adopt(e_bin, [D["A0_bac_poudre"], poudre_bin])
+level(poudre_bin, ((1, 0), (652, 0), (700, 1.0), (1068, 1.0), (1110, 0)))
+
+# ================================================================== 4. CHARGEMENT de R1 (780-1170) par la trappe
+def charniere(tag, angle_monde):
+    """Empty a la charniere de la trappe ; son axe X est tangent au couvercle."""
+    side = 1 if tag.startswith("R1") else -1
+    X = X_R1 if side > 0 else X_R2
+    th = rad(345)
+    h = (X + side * 0.177 * math.cos(th), 0.177 * math.sin(th), 1.333)
+    g = rad(angle_monde + 90)
+    e = empty("SIM_charniere_" + tag, h, (0, 0, g))
+    adopt(e, [D[tag + "_trappe_couvercle"], D[tag + "_trappe_bouton"]])
+    return e, g
+
+
+def ouvrir_trappe(e, g, f_ouvre, f_ferme):
+    for f, a in ((1, 0), (f_ouvre, 0), (f_ouvre + 15, 110), (f_ferme, 110), (f_ferme + 15, 0)):
+        krot(e, f, (rad(a), 0, g))
+
+
+e_t1, g1 = charniere("R1_Attaque", -15)
+e_t2, g2 = charniere("R2_Precipitation", 195)
+ouvrir_trappe(e_t1, g1, 780, 1155)
+ouvrir_trappe(e_t2, g2, 1660, 1772)
+H1 = Vector((X_R1 + 0.125 * math.cos(rad(345)), 0.125 * math.sin(rad(345)), 0))
+H2 = Vector((X_R2 - 0.125 * math.cos(rad(345)), 0.125 * math.sin(rad(345)), 0))
+
+# 4a. l'eau arrive par un tuyau depuis le robinet
+rxr, ryr = X_R1 - 0.70, 0.35
+tuyau_eau = hose("SIM_tuyau_eau", [(rxr, ryr - 0.06, 0.83), (rxr + 0.10, -0.30, 0.65), (X_R1 - 0.25, -0.42, 1.60),
+                                   (H1.x, H1.y, 1.52), (H1.x, H1.y, 1.36)], 0.011, M_TUYAU, sim)
+visible(tuyau_eau, 795, 880)
+jet_eau = rod("SIM_jet_eau_R1", (H1.x, H1.y, 1.36), (H1.x, H1.y, Z0 + 0.01), 0.008, M_EAU, sim)
+visible(jet_eau, 805, 870)
+e_rob = empty("SIM_manette_robinet", (rxr, ryr - 0.03, 0.885))
+adopt(e_rob, [D["Robinet_manette"]])
+for f, a in ((1, 0), (798, 0), (804, 90), (870, 90), (876, 0)):
+    krot(e_rob, f, (0, 0, rad(a)))
+
+# 4b. la soude, versee dans l'eau par la trappe
+P_R1 = Vector((H1.x, H1.y, 1.47))
+SX, SY = X_R1 - 0.45, -0.62
+pot = lathe("SIM_pot_soude", [(0, 0), (0.08, 0), (0.085, 0.15), (0.082, 0.15), (0.077, 0.004), (0, 0.004)],
+            ns["M_BLANC"], sim, (SX, SY, 0))
+tas_s = lathe("SIM_soude_paillettes", [(0, 0), (0.077, 0), (0.080, 0.11), (0, 0.11)], ns["M_BLANC"], sim, (SX, SY, 0.004))
+adopt(pot, [tas_s])
+o_pot = P_R1 - bascule(0.085, 0.15)
+porter(pot, [(1, (SX, SY, 0), (0, 0, 0)), (880, (SX, SY, 0), None), (892, (SX, SY, 1.66), None),
+             (910, (o_pot.x, o_pot.y, 1.66), (0, 0, 0)), (914, o_pot, None), (924, o_pot, (rad(-110), 0, 0)),
+             (960, o_pot, (rad(-110), 0, 0)), (968, o_pot, (0, 0, 0)), (972, (o_pot.x, o_pot.y, 1.66), None),
+             (988, (SX, SY, 1.66), None), (1000, (SX, SY, 0), None)])
+kscale(tas_s, 924, (1, 1, 1))
+kscale(tas_s, 960, (1, 1, 0.03))
+flux("SIM_flux_soude", [P_R1, (H1.x, H1.y, 1.30), (H1.x, H1.y, 1.03)], 8, 924, 962, flocon, periode=14, jitter=0.008)
+
+# 4c. la poudre de bauxite : le bac est porte du broyeur jusqu'a la trappe
+o_bin = P_R1 - bascule(0.12, 0.22)
+DEPOT = (X_R1 - 0.20, -0.62, 0)
+porter(e_bin, [(1, BAC, (0, 0, 0)), (1000, BAC, None), (1015, (BAC.x, BAC.y, 1.72), None),
+               (1045, (o_bin.x, o_bin.y, 1.72), (0, 0, 0)), (1050, o_bin, None), (1062, o_bin, (rad(-110), 0, 0)),
+               (1110, o_bin, (rad(-110), 0, 0)), (1118, o_bin, (0, 0, 0)), (1124, (o_bin.x, o_bin.y, 1.72), None),
+               (1140, (DEPOT[0], DEPOT[1], 1.72), None), (1155, DEPOT, None)])
+jet_p = rod("SIM_flux_poudre_R1", P_R1, (H1.x, H1.y, 1.06), 0.016, ns["M_BAUX"], sim)
+visible(jet_p, 1064, 1110)
+
 liq1 = D["R1_Attaque_liquide"]
-liq1.location.z += 0.0005            # evite le scintillement avec le fond de cuve
+liq1.location.z += 0.0005
 m1 = liq1.data.materials[0]
-level(liq1, ((1, 0), (200, 0), (240, 0.57), (255, 0.57), (290, 0.65), (505, 0.65), (520, 0.93),
-             (610, 0.93), (690, 0.30), (710, 0.30), (770, 0)))
-for f, (rgb, a) in ((200, EAU), (255, EAU), (290, PULPE), (520, PULPE), (600, AMBRE)):
+level(liq1, ((1, 0), (805, 0), (870, 0.50), (924, 0.50), (960, 0.57), (1064, 0.57), (1110, 0.65),
+             (1420, 0.65), (1500, 0.25), (1520, 0.25), (1580, 0)))
+for f, (rgb, a) in ((805, EAU), (1064, EAU), (1110, PULPE), (1330, PULPE), (1410, AMBRE)):
     kmat(m1, f, rgb, a)
 
-boue1 = lathe("SIM_boue_decantee", [(0, 0), (0.1965, 0), (0.1965, 0.045), (0, 0.045)],
-              ns["M_BOUE"], sim, (X_R1, 0, Z0 + 0.007), -45.6, 271.2)
-level(boue1, ((1, 0), (520, 0), (600, 1), (710, 1), (770, 0)))
 
 def agitateur(tag, X, f0, f1):
     e = empty("SIM_rot_" + tag, (X, 0, 1.0))
     adopt(e, named(tag + "_arbre") + named(tag + "_moyeu") + named(tag + "_pale") + named(tag + "_accouplement"))
     spin(e, f0, f1, 2, 9)
 
-agitateur("R1_Attaque", X_R1, 215, 520)
-agitateur("R2_Precipitation", X_R2, 860, 1080)
 
-# ================================================================== 5-6. FILTRATION de R1 (600-780)
+agitateur("R1_Attaque", X_R1, 900, 1330)
+agitateur("R2_Precipitation", X_R2, 1790, 2010)
+
+# ================================================================== 5-6. ATTAQUE puis DECANTATION dans R1
+boue1 = lathe("SIM_boue_decantee", [(0, 0), (0.1965, 0), (0.1965, 0.045), (0, 0.045)],
+              ns["M_BOUE"], sim, (X_R1, 0, Z0 + 0.007), -45.6, 271.2)
+level(boue1, ((1, 0), (1330, 0), (1410, 1), (1520, 1), (1580, 0)))
+
+# ================================================================== 7. FILTRATION de R1 par les vannes
 def vanne(tag, nom, x, y, z, f_open, f_close):
     e = empty(f"SIM_rot_vanne_{tag}_{nom}", (x, y, z))
     adopt(e, [D[f"{tag}_poignee_{nom}"]])
-    krot(e, 1, (0, 0, 0))
-    krot(e, f_open, (0, 0, 0))
-    krot(e, f_open + 10, (0, 0, rad(90)))
-    krot(e, f_close, (0, 0, rad(90)))
-    krot(e, f_close + 10, (0, 0, 0))
+    for f, a in ((1, 0), (f_open, 0), (f_open + 10, 90), (f_close, 90), (f_close + 10, 0)):
+        krot(e, f, (0, 0, rad(a)), 'LINEAR')
+
 
 sx, sy = 0.335 * math.cos(rad(15)), 0.335 * math.sin(rad(15))
-vanne("R1_Attaque", "haute", X_R1 + sx, sy, Z0 + 0.075, 600, 690)
-vanne("R1_Attaque", "basse", X_R1 + sx, -sy, Z0 + 0.022, 700, 770)
-vanne("R2_Precipitation", "basse", X_R2 - sx, -sy, Z0 + 0.022, 1080, 1180)
+vanne("R1_Attaque", "haute", X_R1 + sx, sy, Z0 + 0.075, 1410, 1500)
+vanne("R1_Attaque", "basse", X_R1 + sx, -sy, Z0 + 0.022, 1510, 1580)
+vanne("R2_Precipitation", "basse", X_R2 - sx, -sy, Z0 + 0.022, 2010, 2100)
 
-M_J_AMBRE = mat("SIM_jet_ambre", AMBRE[0], 0, 0.2, alpha=0.8)
 jet1 = rod("SIM_jet_liqueur", (-0.11, 0.03, 0.83), (-0.11, 0.03, 0.56), 0.012, M_J_AMBRE, sim)
-visible(jet1, 610, 690)
+visible(jet1, 1420, 1500)
 jet2 = rod("SIM_jet_boue", (-0.11, -0.03, 0.83), (-0.11, -0.03, 0.56), 0.014, ns["M_BOUE"], sim)
-visible(jet2, 710, 770)
+visible(jet2, 1520, 1580)
 jet3 = rod("SIM_jet_hydrate", (0.11, -0.03, 0.83), (0.11, -0.03, 0.56), 0.014, ns["M_BLANC"], sim)
-visible(jet3, 1090, 1180)
+visible(jet3, 2020, 2100)
 
 M_FILTRAT = mat("SIM_mat_filtrat", AMBRE[0], 0, 0.3, alpha=AMBRE[1])
 filtrat = lathe("SIM_filtrat_dans_fut", [(0, 0), (0.169, 0), (0.187, 0.028), (0.187, 0.26), (0, 0.26)],
                 M_FILTRAT, sim, (X_F, 0, 0.0435), -45, 270)
-level(filtrat, ((1, 0), (610, 0), (690, 0.65), (710, 0.65), (770, 0.80), (795, 0.80), (855, 0),
-                (1090, 0), (1180, 0.9)))
+level(filtrat, ((1, 0), (1420, 0), (1500, 0.65), (1520, 0.65), (1580, 0.80), (1685, 0.80), (1760, 0),
+                (2020, 0), (2100, 0.9)))
 kmat(M_FILTRAT, 1, *AMBRE, kind='CONSTANT')
-kmat(M_FILTRAT, 870, *PALE, kind='CONSTANT')
+kmat(M_FILTRAT, 1770, *PALE, kind='CONSTANT')
 
+# manometre de la pompe a vide
+axe = D["F_pompe_axe_aiguille"]
+e_aig = empty("SIM_rot_aiguille", axe.location.copy())
+adopt(e_aig, [D["F_pompe_aiguille"]])
+for f, a in ((1, -75), (1410, -75), (1430, 0), (1580, 0), (1600, -75), (2010, -75), (2030, 0),
+             (2100, 0), (2120, -75)):
+    krot(e_aig, f, (0, rad(a), 0))
+
+# ================================================================== 8. la galette de boue rouge sort PAR LE HAUT du filtre
 for o in named("F_gateau_boue_rouge"):
     bpy.data.objects.remove(o)
 gat_b = lathe("SIM_gateau_boue_rouge", [(0, 0), (0.162, 0), (0.162, 0.032), (0, 0.032)],
               ns["M_BOUE"], sim, (X_F, 0, 0.553))
-level(gat_b, ((1, 0), (710, 0), (775, 1)))
-# evacuation des boues vers un bac
+level(gat_b, ((1, 0), (1520, 0), (1585, 1)))
 lathe("SIM_bac_boues_rouges", [(0, 0), (0.19, 0), (0.21, 0.18), (0.205, 0.18), (0.186, 0.004), (0, 0.004)],
       ns["M_BAC"], sim, (-0.55, -0.85, 0))
-kloc(gat_b, 790, (X_F, 0, 0.553))
-kloc(gat_b, 815, (-0.25, -0.45, 1.05))
-kloc(gat_b, 840, (-0.55, -0.85, 0.03))
+porter(gat_b, [(1595, (X_F, 0, 0.553), None), (1612, (X_F, 0, 1.0), None), (1638, (-0.55, -0.85, 1.0), None),
+               (1655, (-0.55, -0.85, 0.03), None)])
 
-# ================================================================== 7. TRANSFERT vers R2 (780-860)
-tuyau = hose("SIM_tuyau_transfert",
-             [(0.19, 0.0, 0.25), (0.42, -0.14, 0.95), (0.60, -0.08, 1.48), (X_R2 - 0.121, -0.032, 1.34)],
-             0.010, ns["M_NOIR"], sim)
-visible(tuyau, 785, 862)
+# ================================================================== 9. TRANSFERT de la liqueur vers R2 : vanne, pompe, trappe
+e_vid = empty("SIM_rot_vanne_vidange", (X_F + 0.225, 0, 0.128))
+adopt(e_vid, [D["F_poignee_vidange"]])
+for f, a in ((1, 0), (1675, 0), (1682, 90), (1762, 90), (1769, 0)):
+    krot(e_vid, f, (0, 0, rad(a)), 'LINEAR')
+qx, qy = X_F + 0.36, -0.30
+tuyau_t = hose("SIM_tuyau_transfert", [(qx - 0.05, qy, 0.16), (qx + 0.04, -0.42, 0.70), (X_R2 - 0.30, -0.36, 1.55),
+                                       (H2.x, H2.y, 1.52), (H2.x, H2.y, 1.36)], 0.010, ns["M_NOIR"], sim)
+visible(tuyau_t, 1676, 1770)
+jet_t = rod("SIM_jet_liqueur_R2", (H2.x, H2.y, 1.36), (H2.x, H2.y, Z0 + 0.01), 0.009, M_J_AMBRE, sim)
+visible(jet_t, 1685, 1760)
 liq2 = D["R2_Precipitation_liquide"]
 liq2.location.z += 0.0005
 m2 = liq2.data.materials[0]
-level(liq2, ((1, 0), (795, 0), (855, 1.0), (1090, 1.0), (1180, 0)))
-for f, (rgb, a) in ((795, AMBRE), (880, AMBRE), (1060, LAIT)):
+level(liq2, ((1, 0), (1685, 0), (1760, 1.0), (2020, 1.0), (2100, 0)))
+for f, (rgb, a) in ((1685, AMBRE), (1810, AMBRE), (1990, LAIT)):
     kmat(m2, f, rgb, a)
 
-# ================================================================== 8. PRECIPITATION au CO2 (860-1080)
+# ================================================================== 10. PRECIPITATION au CO2 (par le tube plongeur)
 M_BULLE = mat("SIM_bulle_CO2", (1, 1, 1), 0, 0.1, emit=0.6)
-rnd = random.Random(3)
 zb, zt = Z0 + 0.04, Z0 + 0.225
 for i in range(34):
-    if i < 14:                      # bulles sur les faces de coupe, bien visibles
+    if i < 14:
         th = 224.0 if i % 2 else 316.0
         r = rnd.uniform(0.03, 0.18)
     else:
@@ -255,48 +483,57 @@ for i in range(34):
         r = rnd.uniform(0.04, 0.17)
     x, y = X_R2 + r * math.cos(rad(th)), r * math.sin(rad(th))
     b = ball("SIM_bulle", rnd.uniform(0.005, 0.009), (x, y, zb), M_BULLE, sim)
-    visible(b, 862, 1080)
-    f = 860 + rnd.randint(0, 25)
-    while f < 1080:
+    visible(b, 1792, 2010)
+    f = 1790 + rnd.randint(0, 25)
+    while f < 2010:
         p = rnd.randint(20, 32)
         kloc(b, f, (x, y, zb), 'LINEAR')
         kloc(b, f + p - 1, (x + rnd.uniform(-0.01, 0.01), y, zt), 'CONSTANT')
         f += p
 
-# ================================================================== 9. FILTRATION de l'hydrate (1080-1200)
+# ================================================================== 11. FILTRATION de l'hydrate, puis depot dans le creuset
 hyd = lathe("SIM_gateau_hydrate", [(0, 0), (0.162, 0), (0.162, 0.05), (0, 0.05)],
             ns["M_BLANC"], sim, (X_F, 0, 0.553))
-level(hyd, ((1, 0), (1090, 0), (1180, 1), (1200, 1)))
-kscale(hyd, 1258, (0.5, 0.5, 0.5), 'CONSTANT')
-kscale(hyd, 1260, 0, 'CONSTANT')
+level(hyd, ((1, 0), (2020, 0), (2100, 1)))
 
-# ================================================================== 10-12. FOUR (1200-1440)
 xcK, ycK = X_K - 0.08, -0.08               # centre de la chambre du four
-kloc(hyd, 1200, (X_F, 0, 0.553))
-kloc(hyd, 1230, (1.25, -0.95, 1.25))
-kloc(hyd, 1258, (xcK, ycK, 0.64))
-kscale(hyd, 1258, (0.42, 0.42, 0.42), 'CONSTANT')
+TABLE = Vector((X_K + 0.60, -0.10, 0.628))  # creuset en attente sur la table de preparation
+porter(hyd, [(2120, (X_F, 0, 0.553), None), (2135, (X_F, 0, 1.05), None), (2150, (0.30, -0.62, 1.05), None),
+             (2180, (TABLE.x, -0.62, 1.05), None), (2192, (TABLE.x, TABLE.y, 1.05), None),
+             (2204, (TABLE.x, TABLE.y, TABLE.z + 0.012), None)])
+kscale(hyd, 2192, (1, 1, 1))
+kscale(hyd, 2204, (0.42, 0.42, 0.42))
+kscale(hyd, 2205, 0, 'CONSTANT')
 
+# creuset : modelise dans la chambre ; un empty le porte (table -> four -> table)
+e_gaz = empty("SIM_creuset", (xcK, ycK, 0.628))
 alu = D["K_alumine"]
 h = alu.dimensions.z / 2
-alu.data.transform(Matrix.Translation((0, 0, h)))          # origine au fond de la couche
+alu.data.transform(Matrix.Translation((0, 0, h)))
 alu.location.z -= h
+adopt(e_gaz, named("K_gazette") + [alu])
 kscale(alu, 1, 0, 'CONSTANT')
-kscale(alu, 1260, 1, 'LINEAR')
-kscale(alu, 1290, (1, 1, 1), 'LINEAR')
-kscale(alu, 1370, (1, 1, 0.65), 'LINEAR')                  # perte de masse : l'eau part
+kscale(alu, 2204, 1, 'LINEAR')
+kscale(alu, 2295, (1, 1, 1), 'LINEAR')
+kscale(alu, 2370, (1, 1, 0.65), 'LINEAR')    # perte de masse : l'eau part
 
-# porte : modelisee ouverte a 100 degres, l'empty la referme autour de sa charniere
+# ================================================================== 12. le creuset entre PAR LA PORTE, a plat
+DEVANT = (xcK, -0.62, 0.64)
+porter(e_gaz, [(1, TABLE, None), (2210, TABLE, None), (2216, (TABLE.x, TABLE.y, 0.64), None),
+               (2236, DEVANT, None), (2256, (xcK, ycK, 0.64), None), (2262, (xcK, ycK, 0.628), None),
+               (2420, (xcK, ycK, 0.628), None), (2426, (xcK, ycK, 0.64), None), (2444, DEVANT, None),
+               (2462, (TABLE.x, TABLE.y, 0.64), None), (2468, TABLE, None)])
+
+# ================================================================== 13-14. CALCINATION et REFROIDISSEMENT
 e_porte = empty("SIM_rot_porte", (X_K - 0.28, -0.23, 0.80))
 adopt(e_porte, named("K_porte") + named("K_poignee_porte"))
-for f, a in ((1, 0), (1262, 0), (1290, 100), (1388, 100), (1410, 0)):
-    krot(e_porte, f, (0, 0, rad(a)), 'BEZIER')
+for f, a in ((1, 0), (2265, 0), (2290, 100), (2395, 100), (2415, 0)):
+    krot(e_porte, f, (0, 0, rad(a)))
 
-# afficheur de temperature : une copie du texte par valeur, affichee a tour de role
 pv = D["K_afficheur_PV"]
-seq = ((1, "25"), (1292, "150"), (1302, "290"), (1312, "400"), (1330, "560"), (1340, "780"),
-       (1350, "960"), (1358, "1050"), (1372, "820"), (1378, "540"), (1384, "260"), (1390, "95"),
-       (1414, "60"))
+seq = ((1, "25"), (2292, "150"), (2302, "290"), (2312, "400"), (2330, "560"), (2340, "780"),
+       (2350, "960"), (2358, "1050"), (2374, "820"), (2380, "540"), (2386, "260"), (2392, "95"),
+       (2420, "60"))
 textes = [pv]
 for _, txt in seq[1:]:
     ob = pv.copy()
@@ -308,144 +545,23 @@ pv.data.body = seq[0][1]
 for i, (ob, (f0, _)) in enumerate(zip(textes, seq)):
     visible(ob, f0, seq[i + 1][0] if i + 1 < len(seq) else None)
 
-def kemission(m, f, v):
-    entree = next(n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED").inputs["Emission Strength"]
-    entree.default_value = v
-    entree.keyframe_insert("default_value", frame=f)
-    reg(m.node_tree, None, f, 'CONSTANT')
-
 m_vc = mat("SIM_voyant_chauffe", (0.6, 0.02, 0.01), 0, 0.3, emit=4.0)
 D["K_voyant_chauffe"].data.materials[0] = m_vc
-for f, v in ((1, 0.0), (1292, 4.0), (1360, 0.0)):
+for f, v in ((1, 0.0), (2292, 4.0), (2365, 0.0)):
     kemission(m_vc, f, v)
 
 M_VAPEUR = mat("SIM_vapeur", (1, 1, 1), 0, 0.9, alpha=0.5)
 for i in range(7):
     v = ball("SIM_vapeur", 0.02, (xcK, ycK, 1.04), M_VAPEUR, sim)
     kscale(v, 1, 0, 'CONSTANT')
-    f = 1298 + i * 5
-    while f < 1350:
+    f = 2300 + i * 5
+    while f < 2352:
         kloc(v, f, (xcK, ycK, 1.04), 'LINEAR')
         kscale(v, f, 0.6, 'LINEAR')
         kloc(v, f + 33, (xcK + rnd.uniform(-0.08, 0.08), ycK, 1.50), 'CONSTANT')
         kscale(v, f + 33, 2.2, 'CONSTANT')
         f += 35
     kscale(v, f, 0, 'CONSTANT')
-
-# manometre de la pompe a vide : l'aiguille part de zero quand on filtre
-axe = D["F_pompe_axe_aiguille"]
-e_aig = empty("SIM_rot_aiguille", axe.location.copy())
-adopt(e_aig, [D["F_pompe_aiguille"]])
-for f, a in ((1, -75), (600, -75), (625, 0), (770, 0), (790, -75), (1080, -75), (1105, 0),
-             (1180, 0), (1200, -75)):
-    krot(e_aig, f, (0, rad(a), 0), 'BEZIER')
-
-# ================================================================== DEPART : on decale tout pour inserer l'entree
-DELTA = 168                    # 7 s d'entree de la bauxite brute avant le broyage
-apply_interpolations()
-_reg.clear()
-
-
-def decaler_tout(f_min, delta):
-    for act in bpy.data.actions:
-        fcs = []
-        if hasattr(act, "layers"):
-            for layer in act.layers:
-                for strip in layer.strips:
-                    for cb in strip.channelbags:
-                        fcs.extend(cb.fcurves)
-        else:
-            fcs = list(act.fcurves)
-        for fc in fcs:
-            for kp in fc.keyframe_points:
-                if kp.co.x >= f_min:
-                    kp.co.x += delta
-                    kp.handle_left.x += delta
-                    kp.handle_right.x += delta
-            fc.update()
-
-
-decaler_tout(31, DELTA)
-
-
-def T(f):
-    return f if f < 31 else f + DELTA
-
-
-sc.frame_end = T(1440)
-
-# ================================================================== 1. ENTREE : bauxite brute + billes dans le fut (40-208)
-rnd2 = random.Random(11)
-
-
-def caillou(name, r, loc, m):
-    bm = bmesh.new()
-    bmesh.ops.create_icosphere(bm, subdivisions=1, radius=r)
-    for v in bm.verts:
-        v.co *= rnd2.uniform(0.75, 1.2)
-    bmesh.ops.scale(bm, vec=(1.0, rnd2.uniform(0.7, 1.0), rnd2.uniform(0.6, 0.9)), verts=bm.verts)
-    me = bpy.data.meshes.new(name)
-    bm.to_mesh(me)
-    bm.free()
-    me.materials.append(m)
-    ob = bpy.data.objects.new(name, me)
-    sim.objects.link(ob)
-    ob.location = loc
-    ob.rotation_euler = (rnd2.uniform(0, 6.3), rnd2.uniform(0, 6.3), rnd2.uniform(0, 6.3))
-    return ob
-
-
-# seau en caoutchouc noir plein de bauxite en morceaux, devant le broyeur
-BX, BY = X_A0 - 0.14, -0.50
-lathe("SIM_seau_bauxite_brute", [(0, 0), (0.09, 0), (0.105, 0.17), (0.10, 0.17), (0.086, 0.004), (0, 0.004)],
-      ns["M_NOIR"], sim, (BX, BY, 0))
-cailloux = []
-for i in range(18):
-    a_ = rnd2.uniform(0, math.tau)
-    rr = rnd2.uniform(0, 0.055)
-    z = 0.035 + (i // 6) * 0.05 + rnd2.uniform(0, 0.02)
-    cailloux.append(caillou("SIM_bauxite_brute", rnd2.uniform(0.022, 0.034),
-                            (BX + rr * math.cos(a_), BY + rr * math.sin(a_), z), ns["M_BAUX"]))
-
-# bac de billes d'acier
-TX, TY = X_A0 + 0.30, -0.45
-lathe("SIM_bac_billes", [(0, 0), (0.075, 0), (0.085, 0.06), (0.082, 0.06), (0.072, 0.003), (0, 0.003)],
-      ns["M_TOLE"], sim, (TX, TY, 0))
-billes = []
-for i in range(10):
-    a_ = rnd2.uniform(0, math.tau)
-    rr = rnd2.uniform(0, 0.045)
-    billes.append(ball("SIM_bille_acier", 0.016, (TX + rr * math.cos(a_), TY + rr * math.sin(a_),
-                                                   0.02 + (i // 5) * 0.025), ns["M_INOX"], sim))
-
-# couvercle : on le retire, on le pose au sol, puis on le remet
-repos = Vector((X_A0 + 0.205, 0, ZD))
-sol_c = Vector((X_A0 + 0.55, -0.15, 0.013))
-haut_c = sol_c + Vector((0, 0, 0.08))
-milieu = (X_A0 + 0.40, -0.25, 0.62)
-for f, pos, ry in ((1, repos, 0), (58, repos, 0), (68, milieu, -45), (78, haut_c, -90), (82, sol_c, -90),
-                   (172, sol_c, -90), (176, haut_c, -90), (186, milieu, -45), (196, repos, 0)):
-    kloc(e_lid, f, pos)
-    krot(e_lid, f, (0, rad(ry), 0), 'BEZIER')
-
-
-def charger(objets, f_debut, pas, apex, cible_fn):
-    for i, ob in enumerate(objets):
-        f0 = f_debut + i * pas
-        depart = ob.location.copy()
-        kloc(ob, f0, depart)
-        kloc(ob, f0 + 8, (apex[0], apex[1] + rnd2.uniform(-0.03, 0.03), apex[2]))
-        kloc(ob, f0 + 16, cible_fn(), 'CONSTANT')
-        r0 = ob.rotation_euler.copy()
-        krot(ob, f0, r0)
-        krot(ob, f0 + 16, (r0.x + 3, r0.y + 2, r0.z), 'CONSTANT')
-        visible(ob, 1, 206)            # caches quand le fut est referme et tourne
-
-
-charger(cailloux, 84, 3, (X_A0 + 0.33, -0.17, ZD + 0.20),
-        lambda: (X_A0 + rnd2.uniform(-0.06, 0.12), rnd2.uniform(-0.07, 0.07), ZD - 0.10 + rnd2.uniform(0, 0.04)))
-charger(billes, 140, 3, (X_A0 + 0.33, -0.14, ZD + 0.17),
-        lambda: (X_A0 + rnd2.uniform(-0.10, 0.10), rnd2.uniform(-0.06, 0.06), ZD - 0.115))
 
 # ================================================================== CAMERA
 cam = sc.camera
@@ -456,14 +572,16 @@ con.target = cible
 con.track_axis = 'TRACK_NEGATIVE_Z'
 con.up_axis = 'UP_Y'
 plans = (
-    ((1, 30),            (0.4, -7.7, 2.9),     (0.05, 0, 0.85)),      # vue d'ensemble
-    ((62, 198),          (-1.45, -1.40, 0.95), (-2.28, -0.22, 0.38)), # entree de la bauxite
-    ((T(62), T(200)),    (-1.75, -2.0, 1.25),  (-2.35, 0, 0.55)),     # broyeur
-    ((T(250), T(590)),   (-0.55, -2.5, 1.75),  (-0.85, 0, 1.10)),     # R1
-    ((T(620), T(770)),   (-0.35, -2.9, 1.60),  (-0.40, 0, 0.75)),     # R1 + filtre
-    ((T(795), T(1200)),  (0.45, -2.9, 1.70),   (0.45, 0, 0.85)),      # filtre + R2
-    ((T(1265), T(1388)), (2.62, -2.05, 1.30),  (2.40, -0.10, 0.74)),  # four
-    ((T(1414), T(1440)), (2.40, -1.25, 0.98),  (2.37, -0.08, 0.66)),  # alumine
+    ((1, 30),       (0.4, -7.7, 2.9),     (0.05, 0, 0.85)),       # vue d'ensemble
+    ((58, 372),     (-1.25, -1.85, 1.45), (-2.05, -0.12, 0.72)),  # entree dans le broyeur
+    ((392, 770),    (-1.20, -2.10, 1.25), (-1.95, -0.25, 0.55)),  # broyage + vidange
+    ((790, 1160),   (-0.30, -2.30, 1.85), (-1.05, -0.15, 1.05)),  # chargement de R1
+    ((1175, 1400),  (-0.55, -2.50, 1.75), (-0.85, 0.00, 1.10)),   # attaque, decantation
+    ((1415, 1655),  (-0.35, -2.90, 1.60), (-0.40, 0.00, 0.75)),   # filtration, boue rouge
+    ((1668, 2110),  (0.45, -2.90, 1.70),  (0.45, 0.00, 0.85)),    # transfert, precipitation, filtration
+    ((2125, 2200),  (1.55, -3.90, 2.00),  (1.55, -0.25, 0.80)),   # hydrate -> creuset
+    ((2212, 2445),  (2.90, -2.15, 1.35),  (2.68, -0.20, 0.72)),   # four
+    ((2470, 2520),  (3.30, -1.55, 1.25),  (2.95, -0.10, 0.65)),   # alumine sur la table
 )
 for (fa, fb), pc, pt in plans:
     for f in (fa, fb):
@@ -475,25 +593,31 @@ M_HUD = mat("SIM_texte_ecran", (1, 1, 1), 0, 0.5, emit=1.5)
 M_BANDE = mat("SIM_bandeau", (0, 0, 0), 0, 0.9, alpha=0.6)
 bande = box("SIM_bandeau", (1.04, 0.062, 0.001), (0, 0, 0), M_BANDE, sim)
 bande.parent = cam
-bande.visible_shadow = False             # le bandeau colle a la camera ne doit pas faire d'ombre
+bande.visible_shadow = False
 bande.location = (0, -0.236, -1.004)
 legendes = (
-    (1,       "De la bauxite à l'alumine  -  lot de 5 kg"),
-    (40,      "1. ENTRÉE  -  5 kg de bauxite brute, en morceaux"),
-    (138,     "On ajoute les billes d'acier, puis on referme le fût"),
-    (T(40),   "2. BROYAGE  -  la bauxite est réduite en poudre (< 250 µm)"),
-    (T(200),  "3. CHARGEMENT  -  eau + 3,5 kg de soude, puis 5 kg de poudre"),
-    (T(290),  "4. ATTAQUE  -  100 °C, 2 h : l'alumine se dissout dans la soude"),
-    (T(520),  "5. DÉCANTATION  -  les boues rouges tombent au fond"),
-    (T(600),  "6. FILTRATION  -  vanne haute : la liqueur claire passe"),
-    (T(700),  "7. Vanne basse : les boues rouges restent sur la toile"),
-    (T(780),  "8. TRANSFERT  -  la liqueur d'aluminate va dans R2"),
-    (T(860),  "9. PRÉCIPITATION  -  le CO2 fait apparaître l'hydrate blanc"),
-    (T(1080), "10. FILTRATION  -  l'hydrate d'alumine reste sur la toile"),
-    (T(1200), "11. L'hydrate lavé et séché part au four"),
-    (T(1262), "12. CALCINATION  -  montée à 1050 °C : l'eau part en vapeur"),
-    (T(1365), "13. REFROIDISSEMENT  -  porte fermée jusqu'à moins de 100 °C"),
-    (T(1410), "ALUMINE  -  environ 1,9 kg de poudre blanche"),
+    (1,    "De la bauxite à l'alumine  -  lot de 5 kg"),
+    (40,   "1. ENTRÉE  -  on ouvre le fût, le chariot à trémie s'avance"),
+    (130,  "5 kg de bauxite brute versés dans la trémie, ils glissent dans le fût"),
+    (250,  "Puis les billes d'acier ; le chariot recule, on referme le fût"),
+    (380,  "2. BROYAGE  -  la bauxite est réduite en poudre (< 250 µm)"),
+    (565,  "3. VIDANGE  -  une grille retient les billes, la poudre tombe dans le bac"),
+    (780,  "4. CHARGEMENT de R1  -  l'eau arrive par la trappe"),
+    (880,  "Puis 3,5 kg de soude, toujours versée dans l'eau"),
+    (1000, "Puis les 5 kg de poudre de bauxite"),
+    (1170, "5. ATTAQUE  -  100 °C, 2 h : l'alumine se dissout dans la soude"),
+    (1330, "6. DÉCANTATION  -  les boues rouges tombent au fond"),
+    (1410, "7. FILTRATION  -  vanne haute : la liqueur claire passe"),
+    (1510, "Vanne basse : les boues rouges restent sur la toile"),
+    (1590, "La galette de boue rouge est sortie par le haut du filtre"),
+    (1660, "8. TRANSFERT  -  pompe : la liqueur entre dans R2 par la trappe"),
+    (1790, "9. PRÉCIPITATION  -  le CO2 fait apparaître l'hydrate blanc"),
+    (2010, "10. FILTRATION  -  l'hydrate d'alumine reste sur la toile"),
+    (2115, "11. L'hydrate est déposé dans le creuset"),
+    (2208, "12. Le creuset entre dans le four par la porte"),
+    (2266, "13. CALCINATION  -  montée à 1050 °C : l'eau part en vapeur"),
+    (2366, "14. REFROIDISSEMENT  -  porte fermée jusqu'à moins de 100 °C"),
+    (2420, "ALUMINE  -  environ 1,9 kg de poudre blanche"),
 )
 for i, (f0, txt) in enumerate(legendes):
     cu = bpy.data.curves.new(f"SIM_legende_{i:02d}", 'FONT')
@@ -512,7 +636,7 @@ for i, (f0, txt) in enumerate(legendes):
 apply_interpolations()
 
 # liquides semi-transparents : melange lisse plutot que tramage (sinon effet granuleux)
-for m in (m1, m2, M_FILTRAT, M_J_AMBRE, M_VAPEUR):
+for m in (m1, m2, M_FILTRAT, M_J_AMBRE, M_VAPEUR, M_EAU):
     try:
         m.surface_render_method = 'BLENDED'
     except Exception:
