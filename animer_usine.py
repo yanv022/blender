@@ -1,14 +1,19 @@
-# Animation du procede bauxite -> alumine (60 s a 24 images/s).
-# Reconstruit la scene avec construire_usine.py puis ajoute les images cles.
-# A lancer depuis un .blend enregistre dans le dossier du projet.
+# Animation du procede bauxite -> alumine (60 s a 24 images/s), sur le modele realiste.
+# Reconstruit la scene (construire_usine.py + materiaux_realistes.py) puis ajoute les images cles.
+# A lancer depuis Blender (onglet Scripting) ; les deux autres scripts doivent etre dans le meme dossier.
 
 import bpy, math, os, random
 from mathutils import Vector, Matrix
 
-BASE = os.path.dirname(bpy.data.filepath)
-build = os.path.join(BASE, "construire_usine.py")
+BASE = os.path.dirname(globals().get("__file__") or bpy.data.filepath)
+
+def _executer(nom, espace):
+    chemin = os.path.join(BASE, nom)
+    exec(compile(open(chemin, encoding="utf-8").read(), chemin, "exec"), espace)
+
 ns = {"__name__": "build"}
-exec(compile(open(build, encoding="utf-8").read(), build, "exec"), ns)
+_executer("construire_usine.py", ns)
+_executer("materiaux_realistes.py", {"__name__": "materiaux"})
 lathe, rod, ball, box, mat, coll, hose = (ns[k] for k in ("lathe", "rod", "ball", "box", "mat", "coll", "hose"))
 X_A0, X_R1, X_F, X_R2, X_K = (ns[k] for k in ("X_A0", "X_R1", "X_F", "X_R2", "X_K"))
 D = bpy.data.objects
@@ -132,46 +137,23 @@ PALE   = ((0.75, 0.86, 0.92), 0.40)
 
 # ================================================================== 1. BROYAGE (40-200)
 ZD = 0.625
-for o in named("A0_releveur"):
-    bpy.data.objects.remove(o)
-e_tamb = empty("SIM_rot_tambour", (X_A0, 0, ZD))
-for a in (0, 120, 240):
-    b = box("SIM_releveur", (0.38, 0.004, 0.02),
-            (X_A0, 0.127 * math.cos(rad(a)), ZD + 0.127 * math.sin(rad(a))), ns["M_TOLE"], sim,
-            rot=(rad(a + 90), 0, 0))
-    adopt(e_tamb, [b])
-spin(e_tamb, 40, 200, 0, 5)
-
-e_poul = empty("SIM_rot_poulie", (X_A0 + 0.396, -0.10, 0.50))
-mk = box("SIM_repere_poulie", (0.004, 0.014, 0.014), (X_A0 + 0.397, -0.10, 0.535), ns["M_BLANC"], sim)
-adopt(e_poul, [mk])
-spin(e_poul, 40, 200, 0, 14)
-
-e_bil = empty("SIM_bascule_billes", (X_A0, 0, ZD))
-adopt(e_bil, named("A0_bille_acier") + named("A0_bauxite"))
-f = 40
-krot(e_bil, f, (0, 0, 0))
-while f < 196:
-    krot(e_bil, f + 15, (rad(38), 0, 0))
-    krot(e_bil, f + 21, (rad(4), 0, 0))
-    f += 21
-krot(e_bil, 200, (0, 0, 0))
-for o in named("A0_bauxite"):          # les morceaux deviennent de la poudre
-    kscale(o, 40, 1.6)
-    kscale(o, 200, 0.35)
+e_fut = empty("SIM_rot_fut", (X_A0, 0, ZD))
+adopt(e_fut, named("A0_fut") + named("A0_bourrelet") + named("A0_couvercle")
+      + named("A0_cercle") + named("A0_levier"))
+spin(e_fut, 40, 200, 0, -8)
 
 # ================================================================== 2. CHARGEMENT de R1 (200-290)
 Z0 = 0.90
 seau = lathe("SIM_seau", [(0, 0), (0.09, 0), (0.10, 0.16), (0.097, 0.16), (0.087, 0.003), (0, 0.003)],
-             ns["M_COFFRET"], sim, (X_A0, -0.45, 0.75))
+             ns["M_COFFRET"], sim, (X_A0, -0.45, 0.0))
 poudre = lathe("SIM_poudre_bauxite", [(0, 0), (0.087, 0), (0.094, 0.12), (0, 0.12)],
-               ns["M_BAUX"], sim, (X_A0, -0.45, 0.753))
+               ns["M_BAUX"], sim, (X_A0, -0.45, 0.003))
 adopt(seau, [poudre])
 kscale(seau, 1, 0, 'CONSTANT')
 kscale(seau, 200, 0, 'LINEAR')
 kscale(seau, 206, 1, 'CONSTANT')
 kscale(seau, 296, 0, 'CONSTANT')
-kloc(seau, 206, (X_A0, -0.45, 0.75))
+kloc(seau, 206, (X_A0, -0.45, 0.0))
 kloc(seau, 228, (-1.6, -0.75, 1.75))
 kloc(seau, 250, (X_R1 + 0.121, -0.25, 1.55))
 krot(seau, 252, (0, 0, 0), 'BEZIER')
@@ -287,53 +269,79 @@ level(hyd, ((1, 0), (1090, 0), (1180, 1), (1200, 1)))
 kscale(hyd, 1258, (0.5, 0.5, 0.5), 'CONSTANT')
 kscale(hyd, 1260, 0, 'CONSTANT')
 
-# ================================================================== 10-11. FOUR (1200-1440)
+# ================================================================== 10-12. FOUR (1200-1440)
+xcK, ycK = X_K - 0.08, -0.08               # centre de la chambre du four
 kloc(hyd, 1200, (X_F, 0, 0.553))
 kloc(hyd, 1230, (1.25, -0.95, 1.25))
-kloc(hyd, 1258, (X_K, -0.155, 0.64))
+kloc(hyd, 1258, (xcK, ycK, 0.64))
+kscale(hyd, 1258, (0.42, 0.42, 0.42), 'CONSTANT')
 
 alu = D["K_alumine"]
-alu.data.transform(Matrix.Translation((0, 0, 0.015)))      # origine au fond de la couche
-alu.location.z -= 0.015
+h = alu.dimensions.z / 2
+alu.data.transform(Matrix.Translation((0, 0, h)))          # origine au fond de la couche
+alu.location.z -= h
 kscale(alu, 1, 0, 'CONSTANT')
 kscale(alu, 1260, 1, 'LINEAR')
 kscale(alu, 1290, (1, 1, 1), 'LINEAR')
-kscale(alu, 1370, (1, 1, 0.65), 'LINEAR')
+kscale(alu, 1370, (1, 1, 0.65), 'LINEAR')                  # perte de masse : l'eau part
 
-e_porte = empty("SIM_rot_porte", (X_K - 0.28, -0.28, 0.73))
+# porte : modelisee ouverte a 100 degres, l'empty la referme autour de sa charniere
+e_porte = empty("SIM_rot_porte", (X_K - 0.28, -0.23, 0.80))
 adopt(e_porte, named("K_porte") + named("K_poignee_porte"))
-for f, a in ((1, 0), (1262, 0), (1290, 110), (1380, 110), (1402, 0)):
+for f, a in ((1, 0), (1262, 0), (1290, 100), (1388, 100), (1410, 0)):
     krot(e_porte, f, (0, 0, rad(a)), 'BEZIER')
 
-res = next(n for n in ns["M_RESIST"].node_tree.nodes if n.type == "BSDF_PRINCIPLED").inputs["Emission Strength"]
-for f, v in ((1, 0.3), (1285, 0.3), (1320, 10), (1385, 10), (1430, 1.5)):
-    res.default_value = v
-    res.keyframe_insert("default_value", frame=f)
-    reg(ns["M_RESIST"].node_tree, None, f, 'LINEAR')
-lum = bpy.data.lights.new("SIM_lueur_four", 'POINT')
-lum.color = (1.0, 0.45, 0.1)
-lum_o = bpy.data.objects.new("SIM_lueur_four", lum)
-lum_o.location = (X_K, -0.15, 0.73)
-sim.objects.link(lum_o)
-for f, v in ((1, 0), (1285, 0), (1320, 40), (1385, 40), (1430, 4)):
-    lum.energy = v
-    lum.keyframe_insert("energy", frame=f)
+# afficheur de temperature : une copie du texte par valeur, affichee a tour de role
+pv = D["K_afficheur_PV"]
+seq = ((1, "25"), (1292, "150"), (1302, "290"), (1312, "400"), (1330, "560"), (1340, "780"),
+       (1350, "960"), (1358, "1050"), (1372, "820"), (1378, "540"), (1384, "260"), (1390, "95"),
+       (1414, "60"))
+textes = [pv]
+for _, txt in seq[1:]:
+    ob = pv.copy()
+    ob.data = pv.data.copy()
+    ob.data.body = txt
+    sim.objects.link(ob)
+    textes.append(ob)
+pv.data.body = seq[0][1]
+for i, (ob, (f0, _)) in enumerate(zip(textes, seq)):
+    visible(ob, f0, seq[i + 1][0] if i + 1 < len(seq) else None)
+
+def kemission(m, f, v):
+    entree = next(n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED").inputs["Emission Strength"]
+    entree.default_value = v
+    entree.keyframe_insert("default_value", frame=f)
+    reg(m.node_tree, None, f, 'CONSTANT')
+
+m_vc = mat("SIM_voyant_chauffe", (0.6, 0.02, 0.01), 0, 0.3, emit=4.0)
+D["K_voyant_chauffe"].data.materials[0] = m_vc
+for f, v in ((1, 0.0), (1292, 4.0), (1360, 0.0)):
+    kemission(m_vc, f, v)
 
 M_VAPEUR = mat("SIM_vapeur", (1, 1, 1), 0, 0.9, alpha=0.5)
 for i in range(7):
-    v = ball("SIM_vapeur", 0.02, (X_K, -0.15, 1.06), M_VAPEUR, sim)
+    v = ball("SIM_vapeur", 0.02, (xcK, ycK, 1.04), M_VAPEUR, sim)
     kscale(v, 1, 0, 'CONSTANT')
-    f = 1292 + i * 5
-    while f < 1365:
-        kloc(v, f, (X_K, -0.15, 1.06), 'LINEAR')
+    f = 1298 + i * 5
+    while f < 1350:
+        kloc(v, f, (xcK, ycK, 1.04), 'LINEAR')
         kscale(v, f, 0.6, 'LINEAR')
-        kloc(v, f + 33, (X_K + rnd.uniform(-0.08, 0.08), -0.15, 1.55), 'CONSTANT')
+        kloc(v, f + 33, (xcK + rnd.uniform(-0.08, 0.08), ycK, 1.50), 'CONSTANT')
         kscale(v, f + 33, 2.2, 'CONSTANT')
         f += 35
     kscale(v, f, 0, 'CONSTANT')
 
+# manometre de la pompe a vide : l'aiguille part de zero quand on filtre
+axe = D["F_pompe_axe_aiguille"]
+e_aig = empty("SIM_rot_aiguille", axe.location.copy())
+adopt(e_aig, [D["F_pompe_aiguille"]])
+for f, a in ((1, -75), (600, -75), (625, 0), (770, 0), (790, -75), (1080, -75), (1105, 0),
+             (1180, 0), (1200, -75)):
+    krot(e_aig, f, (0, rad(a), 0), 'BEZIER')
+
 # ================================================================== CAMERA
 cam = sc.camera
+cam.data.lens = 35
 cible = empty("SIM_cible_camera", (0.05, 0, 0.85))
 con = cam.constraints.new('TRACK_TO')
 con.target = cible
@@ -345,8 +353,8 @@ plans = (
     ((250, 590),   (-0.55, -2.5, 1.75),  (-0.85, 0, 1.10)),     # R1
     ((620, 770),   (-0.35, -2.9, 1.60),  (-0.40, 0, 0.75)),     # R1 + filtre
     ((795, 1200),  (0.45, -2.9, 1.70),   (0.45, 0, 0.85)),      # filtre + R2
-    ((1265, 1390), (2.75, -2.5, 1.45),   (2.45, -0.1, 0.78)),   # four
-    ((1412, 1440), (2.55, -1.55, 1.05),  (2.45, -0.15, 0.68)),  # alumine
+    ((1265, 1388), (2.62, -2.05, 1.30),  (2.40, -0.10, 0.74)),  # four
+    ((1414, 1440), (2.40, -1.25, 0.98),  (2.37, -0.08, 0.66)),  # alumine
 )
 for (fa, fb), pc, pt in plans:
     for f in (fa, fb):
@@ -358,6 +366,7 @@ M_HUD = mat("SIM_texte_ecran", (1, 1, 1), 0, 0.5, emit=1.5)
 M_BANDE = mat("SIM_bandeau", (0, 0, 0), 0, 0.9, alpha=0.6)
 bande = box("SIM_bandeau", (1.04, 0.062, 0.001), (0, 0, 0), M_BANDE, sim)
 bande.parent = cam
+bande.visible_shadow = False             # le bandeau colle a la camera ne doit pas faire d'ombre
 bande.location = (0, -0.236, -1.004)
 legendes = (
     (1,    "De la bauxite à l'alumine  -  lot de 5 kg"),
@@ -371,8 +380,9 @@ legendes = (
     (860,  "8. PRÉCIPITATION  -  le CO2 fait apparaître l'hydrate blanc"),
     (1080, "9. FILTRATION  -  l'hydrate d'alumine reste sur la toile"),
     (1200, "10. L'hydrate lavé et séché part au four"),
-    (1262, "11. CALCINATION  -  1050 °C : l'eau part en vapeur"),
-    (1402, "ALUMINE  -  environ 1,9 kg de poudre blanche"),
+    (1262, "11. CALCINATION  -  montée à 1050 °C : l'eau part en vapeur"),
+    (1365, "12. REFROIDISSEMENT  -  porte fermée jusqu'à moins de 100 °C"),
+    (1410, "ALUMINE  -  environ 1,9 kg de poudre blanche"),
 )
 for i, (f0, txt) in enumerate(legendes):
     cu = bpy.data.curves.new(f"SIM_legende_{i:02d}", 'FONT')
@@ -383,10 +393,24 @@ for i, (f0, txt) in enumerate(legendes):
     ob = bpy.data.objects.new(f"SIM_legende_{i:02d}", cu)
     sim.objects.link(ob)
     ob.parent = cam
+    ob.visible_shadow = False
     ob.location = (0, -0.245, -1.0)
     f1 = legendes[i + 1][0] if i + 1 < len(legendes) else None
     visible(ob, f0, f1)
 
 apply_interpolations()
+
+# liquides semi-transparents : melange lisse plutot que tramage (sinon effet granuleux)
+for m in (m1, m2, M_FILTRAT, M_J_AMBRE, M_VAPEUR):
+    try:
+        m.surface_render_method = 'BLENDED'
+    except Exception:
+        pass
+
+# lecture fluide dans la fenetre : images sautees si l'ordinateur est trop lent
+try:
+    sc.sync_mode = 'FRAME_DROP'
+except TypeError:
+    pass
 sc.frame_set(1)
 print("Animation prete :", sc.frame_end, "images,", round(sc.frame_end / sc.render.fps), "s")
