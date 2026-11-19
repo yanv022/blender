@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420.0mm" height="297.0mm" viewBox="0 0 420.0 297.0">
+<rect width="420.0" height="297.0" fill="#fff"/>
+<defs><pattern id="hachures" width="2" height="2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.25"/></pattern></defs>
+<text x="95.00" y="244.00" font-size="3.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">VUE DE FACE</text>
+<polygon points="69.00,235.00 65.00,235.00 65.00,151.00 69.00,151.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="69.00,151.00 65.00,151.00 65.00,91.00 69.00,91.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="121.00,235.00 125.00,235.00 125.00,151.00 121.00,151.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="121.00,151.00 125.00,151.00 125.00,91.00 121.00,91.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="65.00,207.00 125.00,207.00 125.00,203.00 65.00,203.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="65.00,155.00 125.00,155.00 125.00,151.00 65.00,151.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="63.00,151.00 127.00,151.00 127.00,150.40 63.00,150.40" fill="#bbb" stroke="#000" stroke-width="0.4"/>
+<polygon points="65.00,95.00 125.00,95.00 125.00,91.00 65.00,91.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="88.00,91.00 102.00,91.00 102.00,90.20 88.00,90.20" fill="#bbb" stroke="#000" stroke-width="0.4"/>
+<polygon points="74.00,150.40 116.00,150.40 116.00,145.40 74.00,145.40" fill="none" stroke="#000" stroke-width="0.25" stroke-dasharray="2,1"/>
+<polygon points="75.00,145.00 115.00,145.00 115.00,105.00 75.00,105.00" fill="none" stroke="#000" stroke-width="0.25" stroke-dasharray="2,1"/>
+<text x="95.00" y="125.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">cuve (pointillé)</text>
+<line x1="64.00" y1="235.00" x2="55.80" y2="235.00" stroke="#000" stroke-width="0.18"/>
+<line x1="64.00" y1="151.00" x2="55.80" y2="151.00" stroke="#000" stroke-width="0.18"/>
+<line x1="57.00" y1="235.00" x2="57.00" y2="151.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="57.00,235.00 57.70,232.80 56.30,232.80" fill="#000"/>
+<polygon points="57.00,151.00 56.30,153.20 57.70,153.20" fill="#000"/>
+<text x="55.80" y="193.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 55.80 193.00)">840</text>
+<line x1="64.00" y1="235.00" x2="50.80" y2="235.00" stroke="#000" stroke-width="0.18"/>
+<line x1="64.00" y1="91.00" x2="50.80" y2="91.00" stroke="#000" stroke-width="0.18"/>
+<line x1="52.00" y1="235.00" x2="52.00" y2="91.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="52.00,235.00 52.70,232.80 51.30,232.80" fill="#000"/>
+<polygon points="52.00,91.00 51.30,93.20 52.70,93.20" fill="#000"/>
+<text x="50.80" y="163.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 50.80 163.00)">1440</text>
+<line x1="126.00" y1="235.00" x2="132.20" y2="235.00" stroke="#000" stroke-width="0.18"/>
+<line x1="126.00" y1="205.00" x2="132.20" y2="205.00" stroke="#000" stroke-width="0.18"/>
+<line x1="131.00" y1="235.00" x2="131.00" y2="205.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="131.00,235.00 131.70,232.80 130.30,232.80" fill="#000"/>
+<polygon points="131.00,205.00 130.30,207.20 131.70,207.20" fill="#000"/>
+<text x="129.80" y="220.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 129.80 220.00)">300</text>
+<line x1="126.00" y1="235.00" x2="136.20" y2="235.00" stroke="#000" stroke-width="0.18"/>
+<line x1="126.00" y1="153.00" x2="136.20" y2="153.00" stroke="#000" stroke-width="0.18"/>
+<line x1="135.00" y1="235.00" x2="135.00" y2="153.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="135.00,235.00 135.70,232.80 134.30,232.80" fill="#000"/>
+<polygon points="135.00,153.00 134.30,155.20 135.70,155.20" fill="#000"/>
+<text x="133.80" y="194.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 133.80 194.00)">820</text>
+<line x1="65.00" y1="236.00" x2="65.00" y2="240.20" stroke="#000" stroke-width="0.18"/>
+<line x1="125.00" y1="236.00" x2="125.00" y2="240.20" stroke="#000" stroke-width="0.18"/>
+<line x1="65.00" y1="239.00" x2="125.00" y2="239.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="65.00,239.00 67.20,239.70 67.20,238.30" fill="#000"/>
+<polygon points="125.00,239.00 122.80,238.30 122.80,239.70" fill="#000"/>
+<text x="95.00" y="238.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">600</text>
+<line x1="63.00" y1="149.40" x2="63.00" y2="81.80" stroke="#000" stroke-width="0.18"/>
+<line x1="127.00" y1="149.40" x2="127.00" y2="81.80" stroke="#000" stroke-width="0.18"/>
+<line x1="63.00" y1="83.00" x2="127.00" y2="83.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="63.00,83.00 65.20,83.70 65.20,82.30" fill="#000"/>
+<polygon points="127.00,83.00 124.80,82.30 124.80,83.70" fill="#000"/>
+<text x="95.00" y="82.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">tablette 640</text>
+<line x1="117.00" y1="151.00" x2="122.20" y2="151.00" stroke="#000" stroke-width="0.18"/>
+<line x1="117.00" y1="145.00" x2="122.20" y2="145.00" stroke="#000" stroke-width="0.18"/>
+<line x1="121.00" y1="151.00" x2="121.00" y2="145.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="121.00,151.00 121.70,148.80 120.30,148.80" fill="#000"/>
+<polygon points="121.00,145.00 120.30,147.20 121.70,147.20" fill="#000"/>
+<text x="119.80" y="148.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 119.80 148.00)">60</text>
+<text x="95.00" y="148.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">fond de cuve à 900 du sol</text>
+<text x="250.00" y="244.00" font-size="3.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">VUE DE CÔTÉ</text>
+<polygon points="224.00,235.00 220.00,235.00 220.00,151.00 224.00,151.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="276.00,235.00 280.00,235.00 280.00,151.00 276.00,151.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="276.00,151.00 280.00,151.00 280.00,91.00 276.00,91.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="220.00,207.00 280.00,207.00 280.00,203.00 220.00,203.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="220.00,155.00 280.00,155.00 280.00,151.00 220.00,151.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="218.00,151.00 282.00,151.00 282.00,150.40 218.00,150.40" fill="#bbb" stroke="#000" stroke-width="0.4"/>
+<polygon points="240.00,91.00 280.00,91.00 280.00,90.20 240.00,90.20" fill="#bbb" stroke="#000" stroke-width="0.4"/>
+<polygon points="245.00,90.20 255.00,90.20 255.00,62.00 245.00,62.00" fill="none" stroke="#000" stroke-width="0.3" stroke-dasharray="2,1"/>
+<text x="250.00" y="75.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">motoréducteur</text>
+<line x1="240.00" y1="89.20" x2="240.00" y2="81.80" stroke="#000" stroke-width="0.18"/>
+<line x1="280.00" y1="89.20" x2="280.00" y2="81.80" stroke="#000" stroke-width="0.18"/>
+<line x1="240.00" y1="83.00" x2="280.00" y2="83.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="240.00,83.00 242.20,83.70 242.20,82.30" fill="#000"/>
+<polygon points="280.00,83.00 277.80,82.30 277.80,83.70" fill="#000"/>
+<text x="260.00" y="82.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">platine 400</text>
+<line x1="220.00" y1="236.00" x2="220.00" y2="240.20" stroke="#000" stroke-width="0.18"/>
+<line x1="280.00" y1="236.00" x2="280.00" y2="240.20" stroke="#000" stroke-width="0.18"/>
+<line x1="220.00" y1="239.00" x2="280.00" y2="239.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="220.00,239.00 222.20,239.70 222.20,238.30" fill="#000"/>
+<polygon points="280.00,239.00 277.80,238.30 277.80,239.70" fill="#000"/>
+<text x="250.00" y="238.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">600</text>
+<text x="278.00" y="87.00" font-size="2.4" text-anchor="end" font-family="Arial, Helvetica, sans-serif" fill="#000">portique à l'arrière</text>
+<text x="300.00" y="50.00" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">NOTES</text>
+<text x="300.00" y="54.30" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Cornière acier 40×40×4, soudée, peinture époxy.</text>
+<text x="300.00" y="58.60" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Tablette tôle 640×640×6 sur la ceinture haute.</text>
+<text x="300.00" y="62.90" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Portique : 2 montants 40×40 + poutre 600,</text>
+<text x="300.00" y="67.20" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">  platine moteur 140×400×8 percée Ø 20 au centre</text>
+<text x="300.00" y="71.50" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">  (axe de la cuve).</text>
+<text x="300.00" y="75.80" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Ceintures à 300 et 820 (axe des cornières).</text>
+<text x="300.00" y="80.10" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Prévoir le passage des goulottes vers le filtre.</text>
+<rect x="10" y="10" width="400.0" height="277.0" fill="none" stroke="#000" stroke-width="0.7"/>
+<rect x="220.0" y="253.0" width="190" height="34" fill="#fff" stroke="#000" stroke-width="0.5"/>
+<line x1="220.00" y1="265.00" x2="410.00" y2="265.00" stroke="#000" stroke-width="0.35"/>
+<line x1="340.00" y1="265.00" x2="340.00" y2="287.00" stroke="#000" stroke-width="0.35"/>
+<text x="315.00" y="261.50" font-size="4.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">Planche 2/4 — Châssis de cuve et portique (×2)</text>
+<text x="224.00" y="271.00" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">Mini-usine bauxite → alumine (lot de démarrage 5 kg)</text>
+<text x="224.00" y="276.50" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">Cotes en mm, tirées du modèle 3D.</text>
+<text x="224.00" y="282.00" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">À vérifier sur les pièces achetées avant toute découpe.</text>
+<text x="375.00" y="272.00" font-size="2.8" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">Échelles</text>
+<text x="375.00" y="278.00" font-size="3.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">1:10</text>
+</svg>

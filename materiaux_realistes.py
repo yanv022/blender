@@ -336,7 +336,11 @@ RECETTES = {
     "Panneau commande": peinture((0.035, 0.04, 0.045), 0.45, 0.2),  # anthracite
     "Fibre ceramique": fibre_ceramique,
     "Peinture fut": peinture((0.008, 0.035, 0.11), 0.4, 0.3),        # fut acier peint bleu
-    "Peinture jaune": peinture((0.85, 0.40, 0.0), 0.4, 0.2),         # carter de securite
+    "Peinture jaune": peinture((0.85, 0.40, 0.0), 0.4, 0.2),         # carter de securite, potence
+    "Peinture verte securite": peinture((0.02, 0.30, 0.09), 0.4, 0.3),  # douche / rince-oeil
+    "Combinaison de travail": plastique((0.035, 0.08, 0.20), 0.9),
+    "Gant nitrile": plastique((0.04, 0.25, 0.10), 0.45),
+    "Mannequin": plastique((0.50, 0.50, 0.48), 0.6),
     "Afficheur vert": afficheur_vert,
     "Piege transparent": verre,
     "R1_Attaque_mat_liquide": pulpe_rouge,
@@ -362,7 +366,8 @@ for m in list(bpy.data.materials):
 
 
 # ------------------------------------------------------------------ chanfreins
-SANS_CHANFREIN = ("liquide", "bulle", "vapeur", "bille", "bauxite", "Sol", "Mur", "SIM_", "etiquette", "chevalet")
+SANS_CHANFREIN = ("liquide", "bulle", "vapeur", "bille", "bauxite", "Sol", "Mur", "SIM_", "etiquette", "chevalet",
+                  "chaine", "panneau", "_texte", "Operateur")
 n_bev = 0
 for ob in sc.objects:
     if ob.type != 'MESH' or "Chanfrein" in ob.modifiers:

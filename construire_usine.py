@@ -72,6 +72,12 @@ M_JAUNE  = mat("Peinture jaune", (0.85, 0.40, 0.0), 0.0, 0.4)
 M_ETIQ   = mat("Etiquette", (0.86, 0.86, 0.83), 0.0, 0.6)
 M_ETIQ_T = mat("Texte etiquette", (0.015, 0.015, 0.015), 0.0, 0.5)
 M_DANGER = mat("Texte danger", (0.55, 0.01, 0.01), 0.0, 0.5)
+M_BLANC_T= mat("Texte blanc", (0.9, 0.9, 0.9), 0.0, 0.5)
+M_VERT   = mat("Peinture verte securite", (0.02, 0.35, 0.10), 0.0, 0.4)
+M_BLEU_EPI = mat("Panneau bleu obligation", (0.01, 0.12, 0.45), 0.0, 0.5)
+M_GANT   = mat("Gant nitrile", (0.05, 0.30, 0.12), 0.0, 0.5)
+M_COMBI  = mat("Combinaison de travail", (0.04, 0.10, 0.25), 0.0, 0.8)
+M_MANNEQUIN = mat("Mannequin", (0.55, 0.55, 0.53), 0.0, 0.6)
 
 # ------------------------------------------------------------------ outils
 def coll(name):
@@ -388,7 +394,17 @@ def reactor(tag, X, side, cut, co2, liq_rgb=(0.92, 0.93, 0.95), liq_alpha=0.45):
     # coffret de regulation PID
     bx = X - side * 0.28
     box(tag + "_coffret_PID", (0.20, 0.10, 0.26), (bx, 0.21, 1.10), M_COFFRET, c)
-    box(tag + "_afficheur", (0.08, 0.004, 0.035), (bx, 0.158, 1.17), M_ECRAN, c)
+    box(tag + "_afficheur_fond", (0.08, 0.002, 0.035), (bx, 0.159, 1.17), M_NOIR, c)
+    cu = bpy.data.curves.new(tag + "_afficheur_PV", 'FONT')      # temperature affichee (animee)
+    cu.body = "25"
+    cu.size = 0.026
+    cu.align_x = 'CENTER'
+    cu.align_y = 'CENTER'
+    cu.materials.append(M_ECRAN)
+    ob = bpy.data.objects.new(tag + "_afficheur_PV", cu)
+    ob.location = (bx, 0.1575, 1.17)
+    ob.rotation_euler = (math.pi / 2, 0, 0)
+    c.objects.link(ob)
 
     if cut:
         # origine de l'objet au fond de la cuve : l'echelle Z regle le niveau
@@ -626,7 +642,7 @@ def broyeur_reel(X):
     for sy in (-1, 1):
         y = sy * 0.10
         rod("A0_arbre_rouleau_D20", (X - 0.37, y, ZR), (X + 0.40, y, ZR), 0.010, M_INOX, c)
-        rod("A0_gaine_caoutchouc", (X - 0.24, y, ZR), (X + 0.24, y, ZR), 0.020, M_NOIR, c)
+        rod("A0_gaine_caoutchouc", (X - 0.20, y, ZR), (X + 0.16, y, ZR), 0.020, M_NOIR, c)   # s'arrete avant le couvercle
         for sx in (-1, 1):
             x = X + sx * 0.33
             box("A0_palier_semelle", (0.04, 0.11, 0.014), (x, y, 0.467), M_PLAQUE, c)
@@ -636,22 +652,33 @@ def broyeur_reel(X):
             for dy in (-0.04, 0.04):
                 rod("A0_palier_boulon", (x, y + dy, 0.474), (x, y + dy, 0.482), 0.006, M_INOX, c, 6)
 
-    # fut acier 20 L ferme (axe selon X), avec bourrelets de roulement et cercle de fermeture
+    # tambour : tube acier epais (D 280 x 6 mm, L 400) avec fond soude et bride a l'avant (axe selon X).
+    # Un fut de peinture en tole fine ne tiendrait pas les chocs de 10 kg de billes.
+    # Tout ce qui depasse du tube doit rester sous 8 mm : les arbres des rouleaux passent a 10 mm de la paroi.
     rotY = (0, math.radians(90), 0)
-    lathe("A0_fut_acier_20L", [(0, -0.20), (RD, -0.20), (RD, 0.195), (RD - 0.002, 0.195),
-                               (RD - 0.002, -0.197), (0, -0.197)], M_FUT, c, (X, 0, ZD), rot=rotY)   # fut creux
-    for zz in (-0.20, 0.085, -0.085):
-        circ = [(RD + 0.004 * math.cos(t), zz + 0.004 * math.sin(t)) for t in [i * math.tau / 8 for i in range(8)]]
-        lathe("A0_bourrelet_fut", circ, M_FUT, c, (X, 0, ZD), rot=rotY)
-    lathe("A0_couvercle", [(0, 0.195), (RD + 0.004, 0.195), (RD + 0.004, 0.205), (0.02, 0.212), (0, 0.212)],
+    lathe("A0_fut_tube_epais", [(0, -0.20), (RD, -0.20), (RD, 0.19), (RD - 0.006, 0.19),
+                                (RD - 0.006, -0.192), (0, -0.192)],
           M_FUT, c, (X, 0, ZD), rot=rotY)
-    circ = [(RD + 0.008 + 0.006 * math.cos(t), 0.199 + 0.006 * math.sin(t)) for t in [i * math.tau / 10 for i in range(10)]]
-    lathe("A0_cercle_fermeture", circ, M_INOX, c, (X, 0, ZD), rot=rotY)
-    box("A0_levier_cercle", (0.03, 0.02, 0.05), (X + 0.199, -0.02, ZD + RD + 0.02), M_INOX, c)
-    # charniere verticale du couvercle (cote arriere) : le couvercle s'ouvre comme une porte
-    rod("A0_charniere_couvercle", (X + 0.208, RD + 0.012, ZD - 0.03), (X + 0.208, RD + 0.012, ZD + 0.03),
-        0.007, M_INOX, c, 12)
-    box("A0_charniere_patte", (0.03, 0.012, 0.05), (X + 0.19, RD + 0.006, ZD), M_INOX, c)
+    for k in range(3):                      # 3 releveurs soudes a l'interieur : ils remontent les billes
+        a = math.radians(90 + 120 * k)
+        rr = RD - 0.006 - 0.010
+        box("A0_fut_releveur", (0.37, 0.012, 0.020), (X - 0.005, rr * math.cos(a), ZD + rr * math.sin(a)),
+            M_FUT, c, rot=(a - math.pi / 2, 0, 0))
+    for sy in (-1, 1):                      # bossages filetes affleurants : on y visse les tourillons du palan
+        rod("A0_fut_bossage", (X, sy * (RD - 0.004), ZD), (X, sy * (RD + 0.0008), ZD), 0.017, M_INOX, c, 16)
+    for ang in (30, 150, 270):              # 3 grenouilleres plates qui serrent le couvercle (saillie 7 mm)
+        a = math.radians(ang)
+        rr = RD + 0.0035
+        box("A0_fut_grenouillere", (0.045, 0.024, 0.007), (X + 0.180, rr * math.cos(a), ZD + rr * math.sin(a)),
+            M_INOX, c, rot=(a - math.pi / 2, 0, 0))
+    # couvercle affleurant (meme diametre que le tube), poignee, charniere plate cote arriere
+    lathe("A0_couvercle_plaque", [(0, 0.19), (RD, 0.19), (RD, 0.202), (0, 0.202)], M_FUT, c, (X, 0, ZD), rot=rotY)
+    box("A0_couvercle_poignee", (0.02, 0.10, 0.018), (X + 0.216, 0, ZD), M_NOIR, c)
+    for sy in (-0.04, 0.04):
+        box("A0_couvercle_poignee_pied", (0.014, 0.012, 0.012), (X + 0.208, sy, ZD), M_NOIR, c)
+    rod("A0_charniere_couvercle", (X + 0.196, RD + 0.004, ZD - 0.035), (X + 0.196, RD + 0.004, ZD + 0.035),
+        0.004, M_INOX, c, 12)
+    box("A0_charniere_patte", (0.04, 0.004, 0.06), (X + 0.180, RD + 0.002, ZD), M_INOX, c)
 
     # bac de recuperation de la poudre (pose au sol, a droite devant)
     lathe("A0_bac_poudre", [(0, 0), (0.10, 0), (0.12, 0.22), (0.117, 0.22), (0.097, 0.003), (0, 0.003)],
@@ -839,13 +866,22 @@ def four_moufle(X):
     hose("K_cable_alimentation", [(xk, y1, z0 + 0.08), (xk, y1 + 0.12, z0 + 0.02),
                                   (xk + 0.10, y1 + 0.30, 0.30), (xk + 0.15, y1 + 0.45, 0.01)], 0.006, M_NOIR, c)
 
-    # creuset (gazette) + alumine sur la sole
+    # 3 creusets (gazettes 160 x 160 x 45 mm) empiles sur une plaque d'enfournement, avec cales :
+    # ~2,9 kg d'hydrate par lot font 2 a 3 L, un seul creuset (~0,9 L) ne suffit pas
     gx, gy = xc, yc
-    box("K_gazette_fond", (0.16, 0.16, 0.008), (gx, gy, cz0 + 0.004), M_BRIQUE, c)
-    for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-        box("K_gazette_bord", (0.008 if sx else 0.16, 0.008 if sy else 0.16, 0.045),
-            (gx + sx * 0.076, gy + sy * 0.076, cz0 + 0.0225), M_BRIQUE, c)
-    box("K_alumine", (0.144, 0.144, 0.025), (gx, gy, cz0 + 0.0205), M_BLANC, c)
+    box("K_gazette_plaque", (0.20, 0.20, 0.008), (gx, gy, cz0 + 0.004), M_BRIQUE, c)
+    for niv in range(3):
+        zb = cz0 + 0.008 + niv * 0.062
+        box("K_gazette_fond", (0.16, 0.16, 0.008), (gx, gy, zb + 0.004), M_BRIQUE, c)
+        for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            box("K_gazette_bord", (0.008 if sx else 0.16, 0.008 if sy else 0.16, 0.045),
+                (gx + sx * 0.076, gy + sy * 0.076, zb + 0.0225), M_BRIQUE, c)
+        box(f"K_alumine_{niv + 1}", (0.144, 0.144, 0.025), (gx, gy, zb + 0.0205), M_BLANC, c)
+        if niv < 2:
+            for sx in (-1, 1):
+                for sy in (-1, 1):
+                    rod("K_gazette_cale", (gx + sx * 0.07, gy + sy * 0.07, zb + 0.045),
+                        (gx + sx * 0.07, gy + sy * 0.07, zb + 0.062), 0.007, M_BRIQUE, c, 10)
 
     # porte a charniere a gauche, ouverte a 100 degres
     zd0, zd1 = cz0 - 0.07, cz0 + ch + 0.07
@@ -870,14 +906,140 @@ def four_moufle(X):
     return c
 
 
+# ================================================================== POTENCE + PALAN (levage du fut du broyeur)
+POTENCE = dict(cx=None, cy=0.55, z_fleche=1.85, angle0=150.0, d0=0.55, z_crochet0=1.35)
+
+
+def potence(X, c):
+    """Potence sur colonne (fleche tournante 1,3 m) + chariot + palan a chaine + etrier a tourillons.
+    Le fut chargee (~18 kg) se leve par deux tourillons visses dans les bossages du tube."""
+    p = POTENCE
+    cx, cy, zf = X + 0.30, p["cy"], p["z_fleche"]
+    p["cx"] = cx
+    a = math.radians(p["angle0"])
+    u = Vector((math.cos(a), math.sin(a), 0))
+    box("A0_potence_socle", (0.40, 0.40, 0.02), (cx, cy, 0.01), M_CHASSIS, c)
+    rod("A0_potence_colonne", (cx, cy, 0.02), (cx, cy, zf + 0.12), 0.05, M_JAUNE, c, 24)
+    L = 1.30
+    box("A0_potence_fleche", (L, 0.07, 0.10), (cx + u.x * L / 2, cy + u.y * L / 2, zf), M_JAUNE, c, rot=(0, 0, a))
+    rod("A0_potence_tirant", (cx, cy, zf + 0.11), (cx + u.x * 0.85, cy + u.y * 0.85, zf + 0.05), 0.012, M_JAUNE, c)
+    t = Vector((cx, cy, 0)) + u * p["d0"]
+    box("A0_potence_chariot", (0.12, 0.12, 0.05), (t.x, t.y, zf - 0.075), M_PLAQUE, c, rot=(0, 0, a))
+    box("A0_potence_palan", (0.14, 0.10, 0.16), (t.x, t.y, zf - 0.18), M_ROUGE, c, rot=(0, 0, a))
+    z_haut = zf - 0.26                       # sortie de la chaine sous le palan
+    zh = p["z_crochet0"]
+    ch = box("A0_potence_chaine", (0.012, 0.012, 1.0), (t.x, t.y, z_haut), M_INOX, c)
+    ch.data.transform(Matrix.Translation((0, 0, -0.5)))     # origine en haut : l'echelle Z = longueur
+    ch.scale.z = z_haut - (zh + 0.05)
+    p["z_chaine"] = z_haut
+    # crochet + etrier (les tourillons sont 0,30 m sous le point d'accroche)
+    rod("A0_potence_crochet", (t.x, t.y, zh), (t.x, t.y, zh + 0.05), 0.012, M_INOX, c, 12)
+    box("A0_potence_etrier_traverse", (0.03, 0.38, 0.03), (t.x, t.y, zh - 0.04), M_JAUNE, c)
+    for sy in (-1, 1):
+        box("A0_potence_etrier_bras", (0.03, 0.03, 0.29), (t.x, t.y + sy * 0.175, zh - 0.185), M_JAUNE, c)
+        rod("A0_potence_tourillon", (t.x, t.y + sy * 0.175, zh - 0.30), (t.x, t.y + sy * 0.141, zh - 0.30),
+            0.010, M_INOX, c, 12)
+    panneau("A0_potence_etiquette", "CMU 50 kg", (t.x, t.y - 0.09, zf - 0.18), 0.12, 0.045, c, 0.025)
+    return c
+
+
+# ================================================================== POSTE DE SECURITE + OPERATEUR
+def panneau(nom, texte, centre, larg, haut, c, taille, fond=None, m_txt=None, az=-90):
+    """Panneau mural plat (fond colore + texte)."""
+    a = math.radians(az)
+    rz = a + math.pi / 2
+    u = Vector((math.cos(a), math.sin(a), 0))
+    box(nom, (larg, 0.004, haut), centre, fond or M_ETIQ, c, rot=(0, 0, rz))
+    me = _texte_maille(texte, taille)
+    me.materials.append(m_txt or M_ETIQ_T)
+    t = bpy.data.objects.new(nom + "_texte", me)
+    t.location = Vector(centre) + u * 0.0025
+    t.rotation_euler = (math.pi / 2, 0, rz)
+    c.objects.link(t)
+
+
+def securite(c):
+    # douche de securite + rince-oeil (vert normalise), a moins de 10 s des cuves
+    sx, sy = 1.50, 0.70                     # entre R2 et le four, a quelques pas des cuves
+    box("Securite_douche_socle", (0.40, 0.40, 0.02), (sx, sy, 0.01), M_VERT, c)
+    rod("Securite_douche_colonne", (sx, sy, 0.02), (sx, sy, 2.25), 0.025, M_VERT, c, 16)
+    rod("Securite_douche_bras", (sx, sy, 2.22), (sx, sy - 0.45, 2.22), 0.018, M_VERT, c, 16)
+    lathe("Securite_douche_pomme", [(0, 0), (0.13, 0), (0.06, 0.06), (0, 0.06)], M_VERT, c, (sx, sy - 0.45, 2.10))
+    rod("Securite_douche_tirette", (sx, sy - 0.30, 2.20), (sx, sy - 0.30, 1.55), 0.004, M_INOX, c, 8)
+    lathe("Securite_douche_poignee", [(0.03, -0.004), (0.036, -0.004), (0.036, 0.004), (0.03, 0.004)],
+          M_VERT, c, (sx, sy - 0.30, 1.52), rot=(math.pi / 2, 0, 0))
+    rod("Securite_rinceoeil_bras", (sx, sy, 1.02), (sx, sy - 0.25, 1.02), 0.015, M_VERT, c, 12)
+    lathe("Securite_rinceoeil_vasque", [(0, 0), (0.05, 0), (0.15, 0.06), (0.145, 0.06), (0.045, 0.006), (0, 0.006)],
+          M_VERT, c, (sx, sy - 0.30, 1.0))
+    for dx in (-0.04, 0.04):
+        rod("Securite_rinceoeil_buse", (sx + dx, sy - 0.30, 1.0), (sx + dx, sy - 0.30, 1.07), 0.012, M_INOX, c, 12)
+    box("Securite_rinceoeil_palette", (0.12, 0.012, 0.06), (sx, sy - 0.47, 1.0), M_VERT, c)
+    panneau("Securite_panneau_douche", "DOUCHE ET\nRINCE-OEIL", (sx, sy - 0.03, 1.80), 0.26, 0.14, c, 0.035,
+            fond=M_VERT, m_txt=M_BLANC_T)
+    # panneau des equipements de protection (EPI)
+    ex, ey = -0.90, 2.30                     # contre le mur du fond
+    for dx in (-0.40, 0.40):
+        rod("Securite_EPI_poteau", (ex + dx, ey, 0), (ex + dx, ey, 1.75), 0.02, M_CHASSIS, c, 12)
+    box("Securite_EPI_tableau", (0.86, 0.02, 0.70), (ex, ey, 1.30), M_COFFRET, c)
+    panneau("Securite_EPI_titre", "PROTECTIONS OBLIGATOIRES", (ex, ey - 0.012, 1.58), 0.80, 0.08, c, 0.040,
+            fond=M_BLEU_EPI, m_txt=M_BLANC_T)
+    box("Securite_EPI_lunettes", (0.16, 0.03, 0.05), (ex - 0.30, ey - 0.03, 1.40), M_VERRE, c)
+    box("Securite_EPI_visiere", (0.20, 0.02, 0.22), (ex - 0.06, ey - 0.03, 1.32), M_VERRE, c)
+    box("Securite_EPI_visiere_bandeau", (0.20, 0.03, 0.03), (ex - 0.06, ey - 0.03, 1.44), M_NOIR, c)
+    for dx in (0.12, 0.22):
+        box("Securite_EPI_gant", (0.07, 0.025, 0.24), (ex + dx, ey - 0.03, 1.27), M_GANT, c)
+    box("Securite_EPI_tablier", (0.10, 0.02, 0.40), (ex + 0.34, ey - 0.03, 1.15), M_NOIR, c)
+    # tableau electrique (differentiel 30 mA)
+    bx_, by_ = 0.35, 2.32
+    rod("Securite_tableau_poteau", (bx_, by_ + 0.05, 0), (bx_, by_ + 0.05, 1.70), 0.025, M_CHASSIS, c, 12)
+    box("Securite_tableau_electrique", (0.45, 0.16, 0.55), (bx_, by_, 1.30), M_COFFRET, c)
+    panneau("Securite_tableau_panneau", "TABLEAU ELECTRIQUE\nDIFFERENTIEL 30 mA", (bx_, by_ - 0.082, 1.45),
+            0.40, 0.10, c, 0.026, fond=M_JAUNE, m_txt=M_ETIQ_T)
+    # extincteur
+    lathe("Securite_extincteur", [(0, 0), (0.08, 0), (0.08, 0.50), (0.05, 0.56), (0.02, 0.58), (0, 0.58)],
+          M_ROUGE, c, (1.05, 2.25, 0))
+    etiquette("Securite_extincteur_etiquette", "EXTINCTEUR", (1.05, 2.25, 0), 0.08, 0.08, 1.0, 0.25, 0.37, 0.15,
+              c, taille=0.026, az=-90)
+    # extracteur d'air mural (CO2 et brouillard de soude) : sur le mur du fond
+    fx, fz = 1.75, 2.35
+    box("Securite_extracteur_cadre", (0.55, 0.06, 0.55), (fx, 2.47, fz), M_COFFRET, c)
+    rod("Securite_extracteur_grille", (fx, 2.44, fz), (fx, 2.43, fz), 0.24, M_NOIR, c, 32)
+    panneau("Securite_extracteur_panneau", "EXTRACTION D'AIR", (fx, 2.44, fz - 0.37), 0.40, 0.08, c, 0.035)
+
+
+def operateur(x, y, c, az=-90):
+    """Silhouette d'operateur (1,75 m) en tenue de protection : donne l'echelle."""
+    a = math.radians(az)
+    f = Vector((math.cos(a), math.sin(a), 0))        # direction du regard
+    s = Vector((-f.y, f.x, 0))                         # cote
+    P = lambda dx, dy, z: Vector((x, y, z)) + s * dx + f * dy
+    for k in (-1, 1):
+        box("Operateur_botte", (0.11, 0.28, 0.12), P(k * 0.10, 0.04, 0.06), M_NOIR, c, rot=(0, 0, a + math.pi / 2))
+        rod("Operateur_jambe", P(k * 0.10, 0, 0.12), P(k * 0.10, 0, 0.88), 0.07, M_COMBI, c, 16)
+        rod("Operateur_bras", P(k * 0.25, 0, 1.40), P(k * 0.27, 0.02, 0.95), 0.05, M_COMBI, c, 16)
+        ball("Operateur_epaule", 0.06, P(k * 0.24, 0, 1.40), M_COMBI, c)
+        rod("Operateur_gant", P(k * 0.27, 0.02, 0.95), P(k * 0.27, 0.03, 0.78), 0.045, M_GANT, c, 16)
+    box("Operateur_bassin", (0.36, 0.22, 0.14), P(0, 0, 0.92), M_COMBI, c, rot=(0, 0, a + math.pi / 2))
+    box("Operateur_torse", (0.42, 0.24, 0.52), P(0, 0, 1.22), M_COMBI, c, rot=(0, 0, a + math.pi / 2))
+    box("Operateur_tablier", (0.36, 0.01, 0.80), P(0, 0.125, 1.00), M_NOIR, c, rot=(0, 0, a + math.pi / 2))
+    rod("Operateur_cou", P(0, 0, 1.47), P(0, 0, 1.54), 0.05, M_MANNEQUIN, c, 12)
+    ball("Operateur_tete", 0.11, P(0, 0, 1.63), M_MANNEQUIN, c)
+    box("Operateur_visiere", (0.24, 0.01, 0.24), P(0, 0.13, 1.60), M_VERRE, c, rot=(0, 0, a + math.pi / 2))
+    box("Operateur_visiere_bandeau", (0.24, 0.20, 0.035), P(0, 0.03, 1.73), M_NOIR, c, rot=(0, 0, a + math.pi / 2))
+
+
 # ================================================================== SCENE
 X_A0, X_R1, X_F, X_R2, X_K = -2.35, -0.85, 0.0, 0.85, 2.45
 
 broyeur_reel(X_A0)
 reactor("R1_Attaque", X_R1, +1, cut=True, co2=False, liq_rgb=(0.40, 0.10, 0.05), liq_alpha=0.95)
 filtre(X_F)
-reactor("R2_Precipitation", X_R2, -1, cut=True, co2=True)
+reactor("R2_Precipitation", X_R2, -1, cut=True, co2=False)    # precipitation par amorcage : pas de CO2
 four_moufle(X_K)
+potence(X_A0, coll("A0_Potence"))
+c_sec = coll("Securite")
+securite(c_sec)
+operateur(1.95, 0.80, c_sec, az=-90)
 
 # arrivee d'eau : colonne galvanisee + robinet, derriere a gauche de R1
 c_eau = coll("Arrivee_eau")
@@ -907,7 +1069,7 @@ for nom, txt, x, z in (
         ("Txt_A0", "A0  BROYEUR\nbauxite < 250 µm", X_A0, 1.10),
         ("Txt_R1", "R1  ATTAQUE\nsoude 100 °C, 2 h", X_R1, 1.95),
         ("Txt_F", "F  FILTRE\nsous vide", X_F, 1.10),
-        ("Txt_R2", "R2  PRECIPITATION\nCO2, 75 °C", X_R2, 1.95),
+        ("Txt_R2", "R2  PRECIPITATION\namorcage, 60 -> 50 °C", X_R2, 1.95),
         ("Txt_K", "K  FOUR\n1050 °C", X_K, 1.30)):
     label(nom, txt, (x, 0.30, z), 0.095, env)
 

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420.0mm" height="297.0mm" viewBox="0 0 420.0 297.0">
+<rect width="420.0" height="297.0" fill="#fff"/>
+<defs><pattern id="hachures" width="2" height="2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.25"/></pattern></defs>
+<text x="140.00" y="257.00" font-size="3.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">COUPE VERTICALE</text>
+<polyline points="140.00,237.00 106.00,237.00 102.00,231.00 102.00,165.00 106.00,157.00 130.00,155.00 130.00,151.00" fill="none" stroke="#000" stroke-width="0.5"/>
+<polygon points="103.00,245.00 101.00,245.00 101.00,230.00 103.00,230.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<polygon points="103.00,165.00 101.00,165.00 101.00,150.00 103.00,150.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<polyline points="130.60,149.80 129.40,150.80 104.40,139.00 104.40,85.00" fill="none" stroke="#000" stroke-width="0.5"/>
+<polyline points="140.00,237.00 174.00,237.00 178.00,231.00 178.00,165.00 174.00,157.00 150.00,155.00 150.00,151.00" fill="none" stroke="#000" stroke-width="0.5"/>
+<polygon points="177.00,245.00 179.00,245.00 179.00,230.00 177.00,230.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<polygon points="177.00,165.00 179.00,165.00 179.00,150.00 177.00,150.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<polyline points="149.40,149.80 150.60,150.80 175.60,139.00 175.60,85.00" fill="none" stroke="#000" stroke-width="0.5"/>
+<polygon points="105.20,136.00 174.80,136.00 174.80,135.20 105.20,135.20" fill="#555" stroke="#000" stroke-width="0.35"/>
+<polygon points="105.20,135.20 174.80,135.20 174.80,134.40 105.20,134.40" fill="#ddd" stroke="#000" stroke-width="0.3"/>
+<text x="140.00" y="130.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">toile PP sur tôle perforée</text>
+<polygon points="127.60,154.00 152.40,154.00 152.40,150.20 127.60,150.20" fill="url(#hachures)" stroke="#000" stroke-width="0.35"/>
+<polygon points="178.00,227.00 190.00,227.00 190.00,223.00 178.00,223.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<circle cx="185.00" cy="225.00" r="4.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="190.00,226.20 194.00,226.20 194.00,223.80 190.00,223.80" fill="none" stroke="#000" stroke-width="0.35"/>
+<polygon points="88.00,175.00 102.00,175.00 102.00,171.00 88.00,171.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<line x1="140.00" y1="249.00" x2="140.00" y2="73.00" stroke="#000" stroke-width="0.2" stroke-dasharray="6,1.5,1,1.5"/>
+<line x1="102.00" y1="246.00" x2="102.00" y2="254.20" stroke="#000" stroke-width="0.18"/>
+<line x1="178.00" y1="246.00" x2="178.00" y2="254.20" stroke="#000" stroke-width="0.18"/>
+<line x1="102.00" y1="253.00" x2="178.00" y2="253.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="102.00,253.00 104.20,253.70 104.20,252.30" fill="#000"/>
+<polygon points="178.00,253.00 175.80,252.30 175.80,253.70" fill="#000"/>
+<text x="140.00" y="252.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">Ø 380 (fût à bière inox 30–50 L)</text>
+<line x1="104.40" y1="84.00" x2="104.40" y2="71.80" stroke="#000" stroke-width="0.18"/>
+<line x1="175.60" y1="84.00" x2="175.60" y2="71.80" stroke="#000" stroke-width="0.18"/>
+<line x1="104.40" y1="73.00" x2="175.60" y2="73.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="104.40,73.00 106.60,73.70 106.60,72.30" fill="#000"/>
+<polygon points="175.60,73.00 173.40,72.30 173.40,73.70" fill="#000"/>
+<text x="140.00" y="72.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">Ø 356</text>
+<line x1="103.40" y1="245.00" x2="78.80" y2="245.00" stroke="#000" stroke-width="0.18"/>
+<line x1="103.40" y1="85.00" x2="78.80" y2="85.00" stroke="#000" stroke-width="0.18"/>
+<line x1="80.00" y1="245.00" x2="80.00" y2="85.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="80.00,245.00 80.70,242.80 79.30,242.80" fill="#000"/>
+<polygon points="80.00,85.00 79.30,87.20 80.70,87.20" fill="#000"/>
+<text x="78.80" y="165.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 78.80 165.00)">800</text>
+<line x1="129.00" y1="245.00" x2="88.80" y2="245.00" stroke="#000" stroke-width="0.18"/>
+<line x1="129.00" y1="151.00" x2="88.80" y2="151.00" stroke="#000" stroke-width="0.18"/>
+<line x1="90.00" y1="245.00" x2="90.00" y2="151.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="90.00,245.00 90.70,242.80 89.30,242.80" fill="#000"/>
+<polygon points="90.00,151.00 89.30,153.20 90.70,153.20" fill="#000"/>
+<text x="88.80" y="198.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 88.80 198.00)">470</text>
+<line x1="175.80" y1="245.00" x2="201.20" y2="245.00" stroke="#000" stroke-width="0.18"/>
+<line x1="175.80" y1="135.20" x2="201.20" y2="135.20" stroke="#000" stroke-width="0.18"/>
+<line x1="200.00" y1="245.00" x2="200.00" y2="135.20" stroke="#000" stroke-width="0.18"/>
+<polygon points="200.00,245.00 200.70,242.80 199.30,242.80" fill="#000"/>
+<polygon points="200.00,135.20 199.30,137.40 200.70,137.40" fill="#000"/>
+<text x="198.80" y="190.10" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 198.80 190.10)">549 (toile)</text>
+<line x1="195.00" y1="245.00" x2="207.20" y2="245.00" stroke="#000" stroke-width="0.18"/>
+<line x1="195.00" y1="225.00" x2="207.20" y2="225.00" stroke="#000" stroke-width="0.18"/>
+<line x1="206.00" y1="245.00" x2="206.00" y2="225.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="206.00,245.00 206.70,242.80 205.30,242.80" fill="#000"/>
+<polygon points="206.00,225.00 205.30,227.20 206.70,227.20" fill="#000"/>
+<text x="204.80" y="235.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 204.80 235.00)">100</text>
+<line x1="87.00" y1="245.00" x2="72.80" y2="245.00" stroke="#000" stroke-width="0.18"/>
+<line x1="87.00" y1="173.00" x2="72.80" y2="173.00" stroke="#000" stroke-width="0.18"/>
+<line x1="74.00" y1="245.00" x2="74.00" y2="173.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="74.00,245.00 74.70,242.80 73.30,242.80" fill="#000"/>
+<polygon points="74.00,173.00 73.30,175.20 74.70,175.20" fill="#000"/>
+<text x="72.80" y="209.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 72.80 209.00)">360</text>
+<line x1="185.00" y1="225.00" x2="200.00" y2="205.00" stroke="#000" stroke-width="0.18"/>
+<circle cx="185.00" cy="225.00" r="0.50" fill="#000" stroke="#000" stroke-width="0.18"/>
+<text x="202.00" y="206.00" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">vanne de vidange 1/2" → pompe de transfert → R2</text>
+<line x1="95.00" y1="173.00" x2="80.00" y2="155.00" stroke="#000" stroke-width="0.18"/>
+<circle cx="95.00" cy="173.00" r="0.50" fill="#000" stroke="#000" stroke-width="0.18"/>
+<text x="78.00" y="156.00" font-size="2.6" text-anchor="end" font-family="Arial, Helvetica, sans-serif" fill="#000">piquage de vide → piège → pompe</text>
+<line x1="140.00" y1="152.00" x2="164.00" y2="161.00" stroke="#000" stroke-width="0.18"/>
+<circle cx="140.00" cy="152.00" r="0.50" fill="#000" stroke="#000" stroke-width="0.18"/>
+<text x="166.00" y="162.00" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">joint EPDM</text>
+<text x="260.00" y="40.00" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">NOTES</text>
+<text x="260.00" y="44.30" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Vide maximum :</text>
+<text x="260.00" y="48.60" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">   −0,2 bar pour la liqueur et les boues (≥ 85 °C) ;</text>
+<text x="260.00" y="52.90" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">   −0,5 bar pour l'hydrate (≈ 50 °C).</text>
+<text x="260.00" y="57.20" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">  Au-delà, la liqueur chaude bout dans le récepteur.</text>
+<text x="260.00" y="61.50" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Pompe à vide à membrane avec bouton de réglage + vacuomètre.</text>
+<text x="260.00" y="65.80" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Pompe de transfert inox, 10–20 L/min, compatible soude.</text>
+<text x="260.00" y="70.10" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Deux toiles : 5–10 µm (boues rouges), 10–25 µm (hydrate).</text>
+<text x="260.00" y="74.40" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Les goulottes de R1 et R2 arrivent à 830 du sol,</text>
+<text x="260.00" y="78.70" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">  au-dessus du bord de la cuve filtrante (800).</text>
+<text x="260.00" y="83.00" font-size="2.7" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• La galette sort par le haut avec sa toile.</text>
+<rect x="10" y="10" width="400.0" height="277.0" fill="none" stroke="#000" stroke-width="0.7"/>
+<rect x="220.0" y="253.0" width="190" height="34" fill="#fff" stroke="#000" stroke-width="0.5"/>
+<line x1="220.00" y1="265.00" x2="410.00" y2="265.00" stroke="#000" stroke-width="0.35"/>
+<line x1="340.00" y1="265.00" x2="340.00" y2="287.00" stroke="#000" stroke-width="0.35"/>
+<text x="315.00" y="261.50" font-size="4.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">Planche 4/4 — Filtre sous vide et transfert</text>
+<text x="224.00" y="271.00" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">Mini-usine bauxite → alumine (lot de démarrage 5 kg)</text>
+<text x="224.00" y="276.50" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">Cotes en mm, tirées du modèle 3D.</text>
+<text x="224.00" y="282.00" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">À vérifier sur les pièces achetées avant toute découpe.</text>
+<text x="375.00" y="272.00" font-size="2.8" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">Échelles</text>
+<text x="375.00" y="278.00" font-size="3.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">1:5</text>
+</svg>

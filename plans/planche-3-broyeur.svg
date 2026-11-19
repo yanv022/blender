@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="420.0mm" height="297.0mm" viewBox="0 0 420.0 297.0">
+<rect width="420.0" height="297.0" fill="#fff"/>
+<defs><pattern id="hachures" width="2" height="2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="2" stroke="#000" stroke-width="0.25"/></pattern></defs>
+<text x="85.00" y="226.00" font-size="3.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">BROYEUR — VUE DE FACE (1:10)</text>
+<polygon points="54.00,215.00 50.00,215.00 50.00,169.00 54.00,169.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="116.00,215.00 120.00,215.00 120.00,169.00 116.00,169.00" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="50.00,202.00 120.00,202.00 120.00,198.00 50.00,198.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="50.00,173.00 120.00,173.00 120.00,169.00 50.00,169.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="50.00,198.00 120.00,198.00 120.00,197.40 50.00,197.40" fill="#bbb" stroke="#000" stroke-width="0.35"/>
+<polygon points="48.00,166.00 125.00,166.00 125.00,164.00 48.00,164.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<polygon points="65.00,167.00 101.00,167.00 101.00,163.00 65.00,163.00" fill="#555" stroke="#000" stroke-width="0.4"/>
+<polygon points="65.00,166.15 104.00,166.15 104.00,138.85 65.00,138.85" fill="none" stroke="#000" stroke-width="0.5"/>
+<polygon points="104.00,166.15 105.20,166.15 105.20,138.85 104.00,138.85" fill="#bbb" stroke="#000" stroke-width="0.5"/>
+<line x1="59.00" y1="152.50" x2="111.00" y2="152.50" stroke="#000" stroke-width="0.2" stroke-dasharray="6,1.5,1,1.5"/>
+<polygon points="65.50,141.30 102.50,141.30 102.50,140.10 65.50,140.10" fill="none" stroke="#000" stroke-width="0.25" stroke-dasharray="2,1"/>
+<text x="85.00" y="143.50" font-size="2.3" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">releveurs (pointillé)</text>
+<polygon points="85.00,197.50 114.00,197.50 114.00,182.50 85.00,182.50" fill="none" stroke="#000" stroke-width="0.25" stroke-dasharray="2,1"/>
+<text x="99.50" y="190.50" font-size="2.3" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">motoréducteur</text>
+<polygon points="121.50,196.50 126.50,196.50 126.50,158.50 121.50,158.50" fill="none" stroke="#000" stroke-width="0.35" stroke-dasharray="2,1"/>
+<text x="124.00" y="155.00" font-size="2.3" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">carter</text>
+<line x1="50.00" y1="216.00" x2="50.00" y2="220.20" stroke="#000" stroke-width="0.18"/>
+<line x1="120.00" y1="216.00" x2="120.00" y2="220.20" stroke="#000" stroke-width="0.18"/>
+<line x1="50.00" y1="219.00" x2="120.00" y2="219.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="50.00,219.00 52.20,219.70 52.20,218.30" fill="#000"/>
+<polygon points="120.00,219.00 117.80,218.30 117.80,219.70" fill="#000"/>
+<text x="85.00" y="218.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">700</text>
+<line x1="49.00" y1="215.00" x2="41.80" y2="215.00" stroke="#000" stroke-width="0.18"/>
+<line x1="49.00" y1="169.00" x2="41.80" y2="169.00" stroke="#000" stroke-width="0.18"/>
+<line x1="43.00" y1="215.00" x2="43.00" y2="169.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="43.00,215.00 43.70,212.80 42.30,212.80" fill="#000"/>
+<polygon points="43.00,169.00 42.30,171.20 43.70,171.20" fill="#000"/>
+<text x="41.80" y="192.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 41.80 192.00)">460</text>
+<line x1="47.00" y1="215.00" x2="36.80" y2="215.00" stroke="#000" stroke-width="0.18"/>
+<line x1="47.00" y1="165.00" x2="36.80" y2="165.00" stroke="#000" stroke-width="0.18"/>
+<line x1="38.00" y1="215.00" x2="38.00" y2="165.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="38.00,215.00 38.70,212.80 37.30,212.80" fill="#000"/>
+<polygon points="38.00,165.00 37.30,167.20 38.70,167.20" fill="#000"/>
+<text x="36.80" y="190.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 36.80 190.00)">500 (axe rouleaux)</text>
+<line x1="64.00" y1="215.00" x2="31.80" y2="215.00" stroke="#000" stroke-width="0.18"/>
+<line x1="64.00" y1="152.50" x2="31.80" y2="152.50" stroke="#000" stroke-width="0.18"/>
+<line x1="33.00" y1="215.00" x2="33.00" y2="152.50" stroke="#000" stroke-width="0.18"/>
+<polygon points="33.00,215.00 33.70,212.80 32.30,212.80" fill="#000"/>
+<polygon points="33.00,152.50 32.30,154.70 33.70,154.70" fill="#000"/>
+<text x="31.80" y="183.75" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 31.80 183.75)">625 (axe tambour)</text>
+<line x1="65.00" y1="137.80" x2="65.00" y2="131.80" stroke="#000" stroke-width="0.18"/>
+<line x1="105.20" y1="137.80" x2="105.20" y2="131.80" stroke="#000" stroke-width="0.18"/>
+<line x1="65.00" y1="133.00" x2="105.20" y2="133.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="65.00,133.00 67.20,133.70 67.20,132.30" fill="#000"/>
+<polygon points="105.20,133.00 103.00,132.30 103.00,133.70" fill="#000"/>
+<text x="85.10" y="132.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">402 (tube 390 + couvercle 12)</text>
+<line x1="65.00" y1="168.00" x2="65.00" y2="178.20" stroke="#000" stroke-width="0.18"/>
+<line x1="101.00" y1="168.00" x2="101.00" y2="178.20" stroke="#000" stroke-width="0.18"/>
+<line x1="65.00" y1="177.00" x2="101.00" y2="177.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="65.00,177.00 67.20,177.70 67.20,176.30" fill="#000"/>
+<polygon points="101.00,177.00 98.80,176.30 98.80,177.70" fill="#000"/>
+<text x="83.00" y="176.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">manchons 360</text>
+<line x1="75.00" y1="139.00" x2="65.00" y2="125.00" stroke="#000" stroke-width="0.18"/>
+<circle cx="75.00" cy="139.00" r="0.50" fill="#000" stroke="#000" stroke-width="0.18"/>
+<text x="67.00" y="126.00" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">tube acier Ø 273 × 6 (DN 250)</text>
+<text x="330.00" y="120.00" font-size="3.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">COUPE DU TAMBOUR (1:5)</text>
+<circle cx="330.00" cy="85.00" r="27.30" fill="none" stroke="#000" stroke-width="0.5"/>
+<circle cx="330.00" cy="85.00" r="26.10" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="328.80,58.90 331.20,58.90 331.20,62.90 328.80,62.90" fill="#555" stroke="#000" stroke-width="0.4"/>
+<polygon points="308.00,99.09 306.80,97.01 310.26,95.01 311.46,97.09" fill="#555" stroke="#000" stroke-width="0.4"/>
+<polygon points="353.20,97.01 352.00,99.09 348.54,97.09 349.74,95.01" fill="#555" stroke="#000" stroke-width="0.4"/>
+<polygon points="302.70,88.40 302.00,88.40 302.00,81.60 302.70,81.60" fill="#bbb" stroke="#000" stroke-width="0.4"/>
+<circle cx="298.00" cy="105.00" r="4.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<polygon points="357.30,88.40 358.00,88.40 358.00,81.60 357.30,81.60" fill="#bbb" stroke="#000" stroke-width="0.4"/>
+<circle cx="362.00" cy="105.00" r="4.00" fill="none" stroke="#000" stroke-width="0.35"/>
+<text x="330.00" y="107.00" font-size="2.3" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">rouleaux Ø 40 à ±100, axe 125 plus bas</text>
+<line x1="302.70" y1="84.00" x2="302.70" y2="51.80" stroke="#000" stroke-width="0.18"/>
+<line x1="357.30" y1="84.00" x2="357.30" y2="51.80" stroke="#000" stroke-width="0.18"/>
+<line x1="302.70" y1="53.00" x2="357.30" y2="53.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="302.70,53.00 304.90,53.70 304.90,52.30" fill="#000"/>
+<polygon points="357.30,53.00 355.10,52.30 355.10,53.70" fill="#000"/>
+<text x="330.00" y="52.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">Ø 273</text>
+<text x="330.00" y="81.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">3 releveurs 20×12 à 120°</text>
+<text x="330.00" y="91.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">bossages M16 de chaque côté</text>
+<text x="330.00" y="94.00" font-size="2.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">(tourillons de levage)</text>
+<text x="295.00" y="242.00" font-size="3.4" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">CHARIOT À TRÉMIE — EN SERVICE (1:10)</text>
+<polygon points="270.00,180.00 302.37,148.74 298.90,145.14 266.53,176.40" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="297.67,149.90 310.07,149.90 318.87,134.90 288.87,134.90" fill="none" stroke="#000" stroke-width="0.45"/>
+<polygon points="296.00,231.00 298.00,231.00 298.00,154.00 296.00,154.00" fill="none" stroke="#000" stroke-width="0.4"/>
+<polygon points="282.00,232.50 312.00,232.50 312.00,230.50 282.00,230.50" fill="none" stroke="#000" stroke-width="0.4"/>
+<circle cx="285.00" cy="234.20" r="1.80" fill="none" stroke="#000" stroke-width="0.35"/>
+<circle cx="309.00" cy="234.20" r="1.80" fill="none" stroke="#000" stroke-width="0.35"/>
+<line x1="270.00" y1="180.00" x2="282.00" y2="180.00" stroke="#000" stroke-width="0.2" stroke-dasharray="2,1"/>
+<text x="277.00" y="177.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">44°</text>
+<line x1="288.87" y1="133.90" x2="288.87" y2="126.80" stroke="#000" stroke-width="0.18"/>
+<line x1="318.87" y1="133.90" x2="318.87" y2="126.80" stroke="#000" stroke-width="0.18"/>
+<line x1="288.87" y1="128.00" x2="318.87" y2="128.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="288.87,128.00 291.07,128.70 291.07,127.30" fill="#000"/>
+<polygon points="318.87,128.00 316.67,127.30 316.67,128.70" fill="#000"/>
+<text x="303.87" y="127.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">trémie 300 × 300</text>
+<line x1="297.67" y1="150.90" x2="297.67" y2="155.20" stroke="#000" stroke-width="0.18"/>
+<line x1="310.07" y1="150.90" x2="310.07" y2="155.20" stroke="#000" stroke-width="0.18"/>
+<line x1="297.67" y1="154.00" x2="310.07" y2="154.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="297.67,154.00 299.87,154.70 299.87,153.30" fill="#000"/>
+<polygon points="310.07,154.00 307.87,153.30 307.87,154.70" fill="#000"/>
+<text x="303.87" y="153.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">124</text>
+<line x1="319.87" y1="149.90" x2="326.57" y2="149.90" stroke="#000" stroke-width="0.18"/>
+<line x1="319.87" y1="134.90" x2="326.57" y2="134.90" stroke="#000" stroke-width="0.18"/>
+<line x1="325.37" y1="149.90" x2="325.37" y2="134.90" stroke="#000" stroke-width="0.18"/>
+<polygon points="325.37,149.90 326.07,147.70 324.67,147.70" fill="#000"/>
+<polygon points="325.37,134.90 324.67,137.10 326.07,137.10" fill="#000"/>
+<text x="324.17" y="142.40" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 324.17 142.40)">150</text>
+<line x1="299.00" y1="236.00" x2="318.20" y2="236.00" stroke="#000" stroke-width="0.18"/>
+<line x1="299.00" y1="154.00" x2="318.20" y2="154.00" stroke="#000" stroke-width="0.18"/>
+<line x1="317.00" y1="236.00" x2="317.00" y2="154.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="317.00,236.00 317.70,233.80 316.30,233.80" fill="#000"/>
+<polygon points="317.00,154.00 316.30,156.20 317.70,156.20" fill="#000"/>
+<text x="315.80" y="195.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" transform="rotate(-90.0 315.80 195.00)">820</text>
+<line x1="282.00" y1="233.50" x2="282.00" y2="241.20" stroke="#000" stroke-width="0.18"/>
+<line x1="312.00" y1="233.50" x2="312.00" y2="241.20" stroke="#000" stroke-width="0.18"/>
+<line x1="282.00" y1="240.00" x2="312.00" y2="240.00" stroke="#000" stroke-width="0.18"/>
+<polygon points="282.00,240.00 284.20,240.70 284.20,239.30" fill="#000"/>
+<polygon points="312.00,240.00 309.80,239.30 309.80,240.70" fill="#000"/>
+<text x="297.00" y="239.00" font-size="2.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">base 300 × 260</text>
+<text x="292.50" y="167.00" font-size="2.4" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">goulotte en U 450 × 120, joues 50</text>
+<text x="269.00" y="184.00" font-size="2.4" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">bout de goulotte dans le fût (≈ 70 mm)</text>
+<text x="20.00" y="45.00" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">NOTES</text>
+<text x="20.00" y="49.20" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Rien ne doit dépasser du tube de plus de 8 mm : les arbres</text>
+<text x="20.00" y="53.40" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">  des rouleaux passent à 10 mm de la paroi.</text>
+<text x="20.00" y="57.60" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Couvercle affleurant Ø 273 × 12 avec joint, charnière plate</text>
+<text x="20.00" y="61.80" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">  côté arrière, 3 grenouillères plates (saillie 7 mm).</text>
+<text x="20.00" y="66.00" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Manchons caoutchouc arrêtés 30 mm avant le couvercle.</text>
+<text x="20.00" y="70.20" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Vitesse 55–60 tr/min ; motoréducteur 180–250 W, courroie sous carter.</text>
+<text x="20.00" y="74.40" font-size="2.6" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">• Fût chargé ≈ 18 kg : levage au palan (potence, flèche 1,3 m à 1,85 m).</text>
+<rect x="10" y="10" width="400.0" height="277.0" fill="none" stroke="#000" stroke-width="0.7"/>
+<rect x="220.0" y="253.0" width="190" height="34" fill="#fff" stroke="#000" stroke-width="0.5"/>
+<line x1="220.00" y1="265.00" x2="410.00" y2="265.00" stroke="#000" stroke-width="0.35"/>
+<line x1="340.00" y1="265.00" x2="340.00" y2="287.00" stroke="#000" stroke-width="0.35"/>
+<text x="315.00" y="261.50" font-size="4.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">Planche 3/4 — Broyeur à boulets et chariot à trémie</text>
+<text x="224.00" y="271.00" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">Mini-usine bauxite → alumine (lot de démarrage 5 kg)</text>
+<text x="224.00" y="276.50" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">Cotes en mm, tirées du modèle 3D.</text>
+<text x="224.00" y="282.00" font-size="2.8" text-anchor="start" font-family="Arial, Helvetica, sans-serif" fill="#000">À vérifier sur les pièces achetées avant toute découpe.</text>
+<text x="375.00" y="272.00" font-size="2.8" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000">Échelles</text>
+<text x="375.00" y="278.00" font-size="3.0" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" fill="#000" font-weight="bold">1:10 et 1:5</text>
+</svg>
