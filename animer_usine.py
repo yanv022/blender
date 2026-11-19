@@ -2,7 +2,7 @@
 # Reconstruit la scene (construire_usine.py + materiaux_realistes.py) puis ajoute les images cles.
 # A lancer depuis Blender (onglet Scripting) ; les deux autres scripts doivent etre dans le meme dossier.
 
-import bpy, math, os, random
+import bpy, bmesh, math, os, random
 from mathutils import Vector, Matrix
 
 BASE = os.path.dirname(globals().get("__file__") or bpy.data.filepath)
@@ -138,22 +138,23 @@ PALE   = ((0.75, 0.86, 0.92), 0.40)
 # ================================================================== 1. BROYAGE (40-200)
 ZD = 0.625
 e_fut = empty("SIM_rot_fut", (X_A0, 0, ZD))
-adopt(e_fut, named("A0_fut") + named("A0_bourrelet") + named("A0_couvercle")
-      + named("A0_cercle") + named("A0_levier"))
+e_lid = empty("SIM_couvercle_fut", (X_A0 + 0.205, 0, ZD))      # couvercle amovible (chargement)
+adopt(e_lid, named("A0_couvercle") + named("A0_cercle") + named("A0_levier"))
+adopt(e_fut, named("A0_fut") + named("A0_bourrelet") + [e_lid])
 spin(e_fut, 40, 200, 0, -8)
 
 # ================================================================== 2. CHARGEMENT de R1 (200-290)
 Z0 = 0.90
 seau = lathe("SIM_seau", [(0, 0), (0.09, 0), (0.10, 0.16), (0.097, 0.16), (0.087, 0.003), (0, 0.003)],
-             ns["M_COFFRET"], sim, (X_A0, -0.45, 0.0))
+             ns["M_COFFRET"], sim, (X_A0 + 0.12, -0.50, 0.0))
 poudre = lathe("SIM_poudre_bauxite", [(0, 0), (0.087, 0), (0.094, 0.12), (0, 0.12)],
-               ns["M_BAUX"], sim, (X_A0, -0.45, 0.003))
+               ns["M_BAUX"], sim, (X_A0 + 0.12, -0.50, 0.003))
 adopt(seau, [poudre])
 kscale(seau, 1, 0, 'CONSTANT')
 kscale(seau, 200, 0, 'LINEAR')
 kscale(seau, 206, 1, 'CONSTANT')
 kscale(seau, 296, 0, 'CONSTANT')
-kloc(seau, 206, (X_A0, -0.45, 0.0))
+kloc(seau, 206, (X_A0 + 0.12, -0.50, 0.0))
 kloc(seau, 228, (-1.6, -0.75, 1.75))
 kloc(seau, 250, (X_R1 + 0.121, -0.25, 1.55))
 krot(seau, 252, (0, 0, 0), 'BEZIER')
@@ -339,6 +340,113 @@ for f, a in ((1, -75), (600, -75), (625, 0), (770, 0), (790, -75), (1080, -75), 
              (1180, 0), (1200, -75)):
     krot(e_aig, f, (0, rad(a), 0), 'BEZIER')
 
+# ================================================================== DEPART : on decale tout pour inserer l'entree
+DELTA = 168                    # 7 s d'entree de la bauxite brute avant le broyage
+apply_interpolations()
+_reg.clear()
+
+
+def decaler_tout(f_min, delta):
+    for act in bpy.data.actions:
+        fcs = []
+        if hasattr(act, "layers"):
+            for layer in act.layers:
+                for strip in layer.strips:
+                    for cb in strip.channelbags:
+                        fcs.extend(cb.fcurves)
+        else:
+            fcs = list(act.fcurves)
+        for fc in fcs:
+            for kp in fc.keyframe_points:
+                if kp.co.x >= f_min:
+                    kp.co.x += delta
+                    kp.handle_left.x += delta
+                    kp.handle_right.x += delta
+            fc.update()
+
+
+decaler_tout(31, DELTA)
+
+
+def T(f):
+    return f if f < 31 else f + DELTA
+
+
+sc.frame_end = T(1440)
+
+# ================================================================== 1. ENTREE : bauxite brute + billes dans le fut (40-208)
+rnd2 = random.Random(11)
+
+
+def caillou(name, r, loc, m):
+    bm = bmesh.new()
+    bmesh.ops.create_icosphere(bm, subdivisions=1, radius=r)
+    for v in bm.verts:
+        v.co *= rnd2.uniform(0.75, 1.2)
+    bmesh.ops.scale(bm, vec=(1.0, rnd2.uniform(0.7, 1.0), rnd2.uniform(0.6, 0.9)), verts=bm.verts)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    me.materials.append(m)
+    ob = bpy.data.objects.new(name, me)
+    sim.objects.link(ob)
+    ob.location = loc
+    ob.rotation_euler = (rnd2.uniform(0, 6.3), rnd2.uniform(0, 6.3), rnd2.uniform(0, 6.3))
+    return ob
+
+
+# seau en caoutchouc noir plein de bauxite en morceaux, devant le broyeur
+BX, BY = X_A0 - 0.14, -0.50
+lathe("SIM_seau_bauxite_brute", [(0, 0), (0.09, 0), (0.105, 0.17), (0.10, 0.17), (0.086, 0.004), (0, 0.004)],
+      ns["M_NOIR"], sim, (BX, BY, 0))
+cailloux = []
+for i in range(18):
+    a_ = rnd2.uniform(0, math.tau)
+    rr = rnd2.uniform(0, 0.055)
+    z = 0.035 + (i // 6) * 0.05 + rnd2.uniform(0, 0.02)
+    cailloux.append(caillou("SIM_bauxite_brute", rnd2.uniform(0.022, 0.034),
+                            (BX + rr * math.cos(a_), BY + rr * math.sin(a_), z), ns["M_BAUX"]))
+
+# bac de billes d'acier
+TX, TY = X_A0 + 0.30, -0.45
+lathe("SIM_bac_billes", [(0, 0), (0.075, 0), (0.085, 0.06), (0.082, 0.06), (0.072, 0.003), (0, 0.003)],
+      ns["M_TOLE"], sim, (TX, TY, 0))
+billes = []
+for i in range(10):
+    a_ = rnd2.uniform(0, math.tau)
+    rr = rnd2.uniform(0, 0.045)
+    billes.append(ball("SIM_bille_acier", 0.016, (TX + rr * math.cos(a_), TY + rr * math.sin(a_),
+                                                   0.02 + (i // 5) * 0.025), ns["M_INOX"], sim))
+
+# couvercle : on le retire, on le pose au sol, puis on le remet
+repos = Vector((X_A0 + 0.205, 0, ZD))
+sol_c = Vector((X_A0 + 0.55, -0.15, 0.013))
+haut_c = sol_c + Vector((0, 0, 0.08))
+milieu = (X_A0 + 0.40, -0.25, 0.62)
+for f, pos, ry in ((1, repos, 0), (58, repos, 0), (68, milieu, -45), (78, haut_c, -90), (82, sol_c, -90),
+                   (172, sol_c, -90), (176, haut_c, -90), (186, milieu, -45), (196, repos, 0)):
+    kloc(e_lid, f, pos)
+    krot(e_lid, f, (0, rad(ry), 0), 'BEZIER')
+
+
+def charger(objets, f_debut, pas, apex, cible_fn):
+    for i, ob in enumerate(objets):
+        f0 = f_debut + i * pas
+        depart = ob.location.copy()
+        kloc(ob, f0, depart)
+        kloc(ob, f0 + 8, (apex[0], apex[1] + rnd2.uniform(-0.03, 0.03), apex[2]))
+        kloc(ob, f0 + 16, cible_fn(), 'CONSTANT')
+        r0 = ob.rotation_euler.copy()
+        krot(ob, f0, r0)
+        krot(ob, f0 + 16, (r0.x + 3, r0.y + 2, r0.z), 'CONSTANT')
+        visible(ob, 1, 206)            # caches quand le fut est referme et tourne
+
+
+charger(cailloux, 84, 3, (X_A0 + 0.33, -0.17, ZD + 0.20),
+        lambda: (X_A0 + rnd2.uniform(-0.06, 0.12), rnd2.uniform(-0.07, 0.07), ZD - 0.10 + rnd2.uniform(0, 0.04)))
+charger(billes, 140, 3, (X_A0 + 0.33, -0.14, ZD + 0.17),
+        lambda: (X_A0 + rnd2.uniform(-0.10, 0.10), rnd2.uniform(-0.06, 0.06), ZD - 0.115))
+
 # ================================================================== CAMERA
 cam = sc.camera
 cam.data.lens = 35
@@ -348,13 +456,14 @@ con.target = cible
 con.track_axis = 'TRACK_NEGATIVE_Z'
 con.up_axis = 'UP_Y'
 plans = (
-    ((1, 30),      (0.4, -7.7, 2.9),     (0.05, 0, 0.85)),      # vue d'ensemble
-    ((62, 200),    (-1.75, -2.0, 1.25),  (-2.35, 0, 0.55)),     # broyeur
-    ((250, 590),   (-0.55, -2.5, 1.75),  (-0.85, 0, 1.10)),     # R1
-    ((620, 770),   (-0.35, -2.9, 1.60),  (-0.40, 0, 0.75)),     # R1 + filtre
-    ((795, 1200),  (0.45, -2.9, 1.70),   (0.45, 0, 0.85)),      # filtre + R2
-    ((1265, 1388), (2.62, -2.05, 1.30),  (2.40, -0.10, 0.74)),  # four
-    ((1414, 1440), (2.40, -1.25, 0.98),  (2.37, -0.08, 0.66)),  # alumine
+    ((1, 30),            (0.4, -7.7, 2.9),     (0.05, 0, 0.85)),      # vue d'ensemble
+    ((62, 198),          (-1.45, -1.40, 0.95), (-2.28, -0.22, 0.38)), # entree de la bauxite
+    ((T(62), T(200)),    (-1.75, -2.0, 1.25),  (-2.35, 0, 0.55)),     # broyeur
+    ((T(250), T(590)),   (-0.55, -2.5, 1.75),  (-0.85, 0, 1.10)),     # R1
+    ((T(620), T(770)),   (-0.35, -2.9, 1.60),  (-0.40, 0, 0.75)),     # R1 + filtre
+    ((T(795), T(1200)),  (0.45, -2.9, 1.70),   (0.45, 0, 0.85)),      # filtre + R2
+    ((T(1265), T(1388)), (2.62, -2.05, 1.30),  (2.40, -0.10, 0.74)),  # four
+    ((T(1414), T(1440)), (2.40, -1.25, 0.98),  (2.37, -0.08, 0.66)),  # alumine
 )
 for (fa, fb), pc, pt in plans:
     for f in (fa, fb):
@@ -369,20 +478,22 @@ bande.parent = cam
 bande.visible_shadow = False             # le bandeau colle a la camera ne doit pas faire d'ombre
 bande.location = (0, -0.236, -1.004)
 legendes = (
-    (1,    "De la bauxite à l'alumine  -  lot de 5 kg"),
-    (40,   "1. BROYAGE  -  la bauxite est réduite en poudre (< 250 µm)"),
-    (200,  "2. CHARGEMENT  -  eau + 3,5 kg de soude, puis 5 kg de poudre"),
-    (290,  "3. ATTAQUE  -  100 °C, 2 h : l'alumine se dissout dans la soude"),
-    (520,  "4. DÉCANTATION  -  les boues rouges tombent au fond"),
-    (600,  "5. FILTRATION  -  vanne haute : la liqueur claire passe"),
-    (700,  "6. Vanne basse : les boues rouges restent sur la toile"),
-    (780,  "7. TRANSFERT  -  la liqueur d'aluminate va dans R2"),
-    (860,  "8. PRÉCIPITATION  -  le CO2 fait apparaître l'hydrate blanc"),
-    (1080, "9. FILTRATION  -  l'hydrate d'alumine reste sur la toile"),
-    (1200, "10. L'hydrate lavé et séché part au four"),
-    (1262, "11. CALCINATION  -  montée à 1050 °C : l'eau part en vapeur"),
-    (1365, "12. REFROIDISSEMENT  -  porte fermée jusqu'à moins de 100 °C"),
-    (1410, "ALUMINE  -  environ 1,9 kg de poudre blanche"),
+    (1,       "De la bauxite à l'alumine  -  lot de 5 kg"),
+    (40,      "1. ENTRÉE  -  5 kg de bauxite brute, en morceaux"),
+    (138,     "On ajoute les billes d'acier, puis on referme le fût"),
+    (T(40),   "2. BROYAGE  -  la bauxite est réduite en poudre (< 250 µm)"),
+    (T(200),  "3. CHARGEMENT  -  eau + 3,5 kg de soude, puis 5 kg de poudre"),
+    (T(290),  "4. ATTAQUE  -  100 °C, 2 h : l'alumine se dissout dans la soude"),
+    (T(520),  "5. DÉCANTATION  -  les boues rouges tombent au fond"),
+    (T(600),  "6. FILTRATION  -  vanne haute : la liqueur claire passe"),
+    (T(700),  "7. Vanne basse : les boues rouges restent sur la toile"),
+    (T(780),  "8. TRANSFERT  -  la liqueur d'aluminate va dans R2"),
+    (T(860),  "9. PRÉCIPITATION  -  le CO2 fait apparaître l'hydrate blanc"),
+    (T(1080), "10. FILTRATION  -  l'hydrate d'alumine reste sur la toile"),
+    (T(1200), "11. L'hydrate lavé et séché part au four"),
+    (T(1262), "12. CALCINATION  -  montée à 1050 °C : l'eau part en vapeur"),
+    (T(1365), "13. REFROIDISSEMENT  -  porte fermée jusqu'à moins de 100 °C"),
+    (T(1410), "ALUMINE  -  environ 1,9 kg de poudre blanche"),
 )
 for i, (f0, txt) in enumerate(legendes):
     cu = bpy.data.curves.new(f"SIM_legende_{i:02d}", 'FONT')

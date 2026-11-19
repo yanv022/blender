@@ -515,7 +515,8 @@ def broyeur_reel(X):
 
     # fut acier 20 L ferme (axe selon X), avec bourrelets de roulement et cercle de fermeture
     rotY = (0, math.radians(90), 0)
-    lathe("A0_fut_acier_20L", [(0, -0.20), (RD, -0.20), (RD, 0.195), (0, 0.195)], M_FUT, c, (X, 0, ZD), rot=rotY)
+    lathe("A0_fut_acier_20L", [(0, -0.20), (RD, -0.20), (RD, 0.195), (RD - 0.002, 0.195),
+                               (RD - 0.002, -0.197), (0, -0.197)], M_FUT, c, (X, 0, ZD), rot=rotY)   # fut creux
     for zz in (-0.20, 0.085, -0.085):
         circ = [(RD + 0.004 * math.cos(t), zz + 0.004 * math.sin(t)) for t in [i * math.tau / 8 for i in range(8)]]
         lathe("A0_bourrelet_fut", circ, M_FUT, c, (X, 0, ZD), rot=rotY)
