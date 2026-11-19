@@ -362,7 +362,7 @@ for m in list(bpy.data.materials):
 
 
 # ------------------------------------------------------------------ chanfreins
-SANS_CHANFREIN = ("liquide", "bulle", "vapeur", "bille", "bauxite", "Sol", "Mur", "SIM_")
+SANS_CHANFREIN = ("liquide", "bulle", "vapeur", "bille", "bauxite", "Sol", "Mur", "SIM_", "etiquette", "chevalet")
 n_bev = 0
 for ob in sc.objects:
     if ob.type != 'MESH' or "Chanfrein" in ob.modifiers:

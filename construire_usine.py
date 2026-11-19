@@ -173,31 +173,74 @@ def hose(name, pts, r, m, c):
     c.objects.link(ob)
     return ob
 
-def etiquette(nom, texte, base, r_bas, r_haut, h, z0, z1, larg, c, taille=0.022, m_txt=None, az=-55):
-    """Etiquette blanche collee sur un recipient (conique ou cylindrique).
-    base = centre du fond ; z0..z1 = hauteur de l'etiquette au-dessus du fond ;
-    az = direction de la face etiquetee en degres (-90 = face avant, -55 = avant-droite, cote cameras)."""
-    zc = (z0 + z1) / 2
-    r = r_bas + (r_haut - r_bas) * zc / h
-    pente = math.atan2(r_haut - r_bas, h)
-    x, y, zb = base
-    a = math.radians(az)
-    u = Vector((math.cos(a), math.sin(a), 0))
-    rz = a + math.pi / 2
-    p = Vector((x, y, zb + zc)) + u * (r + 0.002)
-    plaque = box(nom, (larg, 0.0015, z1 - z0), p, M_ETIQ, c, rot=(pente, 0, rz))
-    cu = bpy.data.curves.new(nom + "_texte", 'FONT')
+def _texte_maille(texte, taille):
+    """Texte Blender converti en maillage plat (lettres pleines), centre sur l'origine."""
+    cu = bpy.data.curves.new("tmp_texte", 'FONT')
     cu.body = texte
     cu.size = taille
     cu.offset = taille * 0.035              # lettres epaissies : lisibles de loin
     cu.align_x = 'CENTER'
     cu.align_y = 'CENTER'
-    cu.materials.append(m_txt or M_ETIQ_T)
-    t = bpy.data.objects.new(nom + "_texte", cu)
-    t.location = Vector((x, y, zb + zc)) + u * (r + 0.0035)
-    t.rotation_euler = (math.pi / 2 + pente, 0, rz)
+    tmp = bpy.data.objects.new("tmp_texte", cu)
+    scene.collection.objects.link(tmp)
+    bpy.context.view_layer.update()
+    me = bpy.data.meshes.new_from_object(tmp.evaluated_get(bpy.context.evaluated_depsgraph_get()))
+    bpy.data.objects.remove(tmp)
+    bpy.data.curves.remove(cu)
+    return me
+
+
+def etiquette(nom, texte, base, r_bas, r_haut, h, z0, z1, larg, c, taille=0.022, m_txt=None, az=-55,
+              plat=False):
+    """Etiquette sur un recipient.
+    - par defaut : bande blanche qui epouse la paroi (cylindre ou tronc de cone) et texte enroule dessus ;
+    - plat=True : panneau plat (sur une patte si r_bas > 0, sinon chevalet pose).
+    base = centre du fond ; z0..z1 = hauteur de l'etiquette au-dessus du fond ;
+    az = direction du milieu de l'etiquette en degres (-90 = face avant, -55 = avant-droite, cote cameras)."""
+    x, y, zb = base
+    a = math.radians(az)
+    zc = (z0 + z1) / 2
+    me = _texte_maille(texte, taille)
+    me.materials.append(m_txt or M_ETIQ_T)
+    objets = []
+
+    if plat:
+        u = Vector((math.cos(a), math.sin(a), 0))
+        rz = a + math.pi / 2
+        ecart = r_bas + 0.025 if r_bas > 0 else 0.0
+        p = Vector((x, y, zb + zc)) + u * ecart
+        objets.append(box(nom, (larg, 0.0015, z1 - z0), p, M_ETIQ, c, rot=(0, 0, rz)))
+        if r_bas > 0:                        # patte de fixation sur le poteau
+            objets.append(rod(nom + "_patte", Vector((x, y, zb + zc)) + u * r_bas, p - u * 0.001, 0.003, M_INOX, c, 8))
+        else:                                # pied du chevalet
+            objets.append(box(nom + "_pied", (larg * 0.8, 0.05, 0.003), p - u * 0.025 + Vector((0, 0, -zc + 0.0015)),
+                              M_ETIQ, c, rot=(0, 0, rz)))
+        t = bpy.data.objects.new(nom + "_texte", me)
+        t.location = p + u * 0.0012
+        t.rotation_euler = (math.pi / 2, 0, rz)
+        c.objects.link(t)
+        objets.append(t)
+        return objets
+
+    def R(z):                                # rayon de la paroi a la hauteur z, plus un jeu
+        return r_bas + (r_haut - r_bas) * z / h + 0.0012
+
+    ep = 0.0012
+    span = math.degrees(larg / R(zc))
+    objets.append(lathe(nom, [(R(z0), z0), (R(z0) + ep, z0), (R(z1) + ep, z1), (R(z1), z1)],
+                        M_ETIQ, c, (x, y, zb), az - span / 2, span, steps=96))
+    for v in me.vertices:                    # on enroule chaque lettre sur la paroi
+        tx, ty = v.co.x, v.co.y
+        z = zc + ty
+        rr = R(z) + ep + 0.0006
+        phi = a + tx / rr
+        v.co = (rr * math.cos(phi), rr * math.sin(phi), z)
+    me.update()
+    t = bpy.data.objects.new(nom + "_texte", me)
+    t.location = (x, y, zb)
     c.objects.link(t)
-    return [plaque, t]
+    objets.append(t)
+    return objets
 
 
 def label(name, txt, loc, size, c):
@@ -614,7 +657,7 @@ def broyeur_reel(X):
     lathe("A0_bac_poudre", [(0, 0), (0.10, 0), (0.12, 0.22), (0.117, 0.22), (0.097, 0.003), (0, 0.003)],
           M_TOLE, c, (X + 0.65, -0.45, 0))
     etiquette("A0_bac_poudre_etiquette", "POUDRE DE\nBAUXITE", (X + 0.65, -0.45, 0), 0.10, 0.12, 0.22,
-              0.04, 0.19, 0.20, c, taille=0.034)
+              0.04, 0.19, 0.19, c, taille=0.030)
 
     # chariot de chargement : tremie + goulotte inclinee a 44 degres, gare a droite du broyeur
     # (en service, le bout de la goulotte entre dans l'ouverture du fut : on le recule de 0,40 m)
@@ -844,7 +887,8 @@ rod("Robinet_colonne", (rx, ry, 0.01), (rx, ry, 0.88), 0.016, M_TOLE, c_eau, 16)
 rod("Robinet_corps", (rx, ry, 0.86), (rx, ry - 0.06, 0.86), 0.014, M_INOX, c_eau, 16)
 rod("Robinet_bec", (rx, ry - 0.06, 0.86), (rx, ry - 0.06, 0.83), 0.009, M_INOX, c_eau, 12)
 box("Robinet_manette", (0.06, 0.012, 0.008), (rx, ry - 0.03, 0.885), M_ROUGE, c_eau)
-etiquette("Robinet_etiquette", "EAU", (rx, ry, 0), 0.016, 0.016, 1.0, 0.62, 0.72, 0.11, c_eau, taille=0.05)
+etiquette("Robinet_etiquette", "EAU", (rx, ry, 0), 0.016, 0.016, 1.0, 0.62, 0.72, 0.11, c_eau, taille=0.05,
+          plat=True)                       # panneau visse sur une patte : le tuyau est trop fin pour une etiquette
 
 env = coll("Atelier")
 box("Sol", (7.6, 3.6, 0.02), (0.1, 0, -0.011), M_SOL, env)

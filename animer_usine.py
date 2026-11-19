@@ -269,7 +269,7 @@ for i in range(18):
     tas.append(caillou("SIM_bauxite_brute", (BX + rr_ * math.cos(a_), BY + rr_ * math.sin(a_),
                                              0.035 + (i // 6) * 0.05 + rnd2.uniform(0, 0.02)), rnd2.uniform(0.022, 0.034)))
 adopt(seau_b, tas + etiquette("SIM_seau_bauxite_etiquette", "BAUXITE", (BX, BY, 0), 0.09, 0.105, 0.17,
-                              0.03, 0.15, 0.19, sim, taille=0.042))
+                              0.03, 0.15, 0.16, sim, taille=0.036))
 o_seau = P_TREMIE - bascule(0.105, 0.17)
 porter(seau_b, [(1, (BX, BY, 0), (0, 0, 0)), (92, (BX, BY, 0), None), (108, (BX, BY, 1.32), None),
                 (128, (o_seau.x, o_seau.y, 1.32), (0, 0, 0)), (134, o_seau, None), (146, o_seau, (rad(-110), 0, 0)),
@@ -289,7 +289,7 @@ for i in range(10):
     rr_ = rnd2.uniform(0, 0.045)
     tas_b.append(bille("SIM_bille_tas", (TX + rr_ * math.cos(a_), TY + rr_ * math.sin(a_), 0.02 + (i // 5) * 0.025)))
 adopt(bac_b, tas_b + etiquette("SIM_bac_billes_etiquette", "BILLES\nD'ACIER", (TX, TY, 0), 0.075, 0.085, 0.09,
-                               0.01, 0.08, 0.16, sim, taille=0.024))
+                               0.01, 0.08, 0.13, sim, taille=0.022))
 o_bac = P_TREMIE - bascule(0.085, 0.09)
 porter(bac_b, [(1, (TX, TY, 0), (0, 0, 0)), (246, (TX, TY, 0), None), (258, (TX, TY, 1.24), None),
                (274, (o_bac.x, o_bac.y, 1.24), (0, 0, 0)), (278, o_bac, None), (288, o_bac, (rad(-110), 0, 0)),
@@ -367,7 +367,7 @@ pot = lathe("SIM_pot_soude", [(0, 0), (0.08, 0), (0.085, 0.15), (0.082, 0.15), (
             ns["M_BLANC"], sim, (SX, SY, 0))
 tas_s = lathe("SIM_soude_paillettes", [(0, 0), (0.077, 0), (0.080, 0.11), (0, 0.11)], ns["M_BLANC"], sim, (SX, SY, 0.004))
 adopt(pot, [tas_s] + etiquette("SIM_pot_soude_etiquette", "SOUDE\nNaOH", (SX, SY, 0), 0.08, 0.085, 0.15,
-                               0.02, 0.135, 0.15, sim, taille=0.038, m_txt=ns["M_DANGER"]))
+                               0.02, 0.135, 0.13, sim, taille=0.034, m_txt=ns["M_DANGER"]))
 o_pot = P_R1 - bascule(0.085, 0.15)
 porter(pot, [(1, (SX, SY, 0), (0, 0, 0)), (880, (SX, SY, 0), None), (892, (SX, SY, 1.66), None),
              (910, (o_pot.x, o_pot.y, 1.66), (0, 0, 0)), (914, o_pot, None), (924, o_pot, (rad(-110), 0, 0)),
@@ -531,7 +531,7 @@ porter(e_gaz, [(1, TABLE, None), (2210, TABLE, None), (2216, (TABLE.x, TABLE.y, 
                (2462, (TABLE.x, TABLE.y, 0.64), None), (2468, TABLE, None)])
 # chevalet "ALUMINE" pose sur la table quand le produit fini revient
 for ob in etiquette("SIM_chevalet_alumine", "ALUMINE\nAl2O3", (TABLE.x, TABLE.y - 0.12, TABLE.z), 0.0, 0.0, 1.0,
-                    0.0, 0.10, 0.18, sim, taille=0.036, az=-80):
+                    0.0, 0.10, 0.18, sim, taille=0.036, az=-80, plat=True):
     visible(ob, 2468)
 
 # ================================================================== 13-14. CALCINATION et REFROIDISSEMENT
