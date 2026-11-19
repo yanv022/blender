@@ -67,6 +67,8 @@ M_FOUR   = mat("Peinture four", (0.56, 0.57, 0.55), 0.0, 0.42)
 M_PANNEAU= mat("Panneau commande", (0.035, 0.04, 0.045), 0.0, 0.45)
 M_FIBRE  = mat("Fibre ceramique", (0.80, 0.77, 0.70), 0.0, 0.95)
 M_ECRAN_V= mat("Afficheur vert", (0.1, 1.0, 0.2), 0.0, 0.4, emit=3.0)
+M_FUT    = mat("Peinture fut", (0.01, 0.04, 0.12), 0.0, 0.4)
+M_JAUNE  = mat("Peinture jaune", (0.85, 0.40, 0.0), 0.0, 0.4)
 
 # ------------------------------------------------------------------ outils
 def coll(name):
@@ -344,12 +346,12 @@ def filtre(X):
     tx, px, y = X - 0.20, X + 0.18, -0.62
     rod("F_piege_a_liquide_5L", (tx, y, 0.0), (tx, y, 0.26), 0.07, M_VERRE, c, 32)
     rod("F_couvercle_piege", (tx, y, 0.26), (tx, y, 0.275), 0.075, M_NOIR, c, 32)
-    box("F_pompe_a_vide", (0.22, 0.13, 0.14), (px, y, 0.07), M_MOTEUR, c)
+    entree = pompe_vide(px, y, c)
     p = pol(0.26, 250, 0.36)
     hose("F_tuyau_vide_a", [p, (p[0] - 0.05, p[1] - 0.12, 0.42), (tx - 0.02, y, 0.36), (tx - 0.02, y, 0.275)],
          0.007, M_NOIR, c)
-    hose("F_tuyau_vide_b", [(tx + 0.03, y, 0.275), (tx + 0.10, y, 0.36), (px - 0.05, y, 0.26), (px, y, 0.14)],
-         0.007, M_NOIR, c)
+    hose("F_tuyau_vide_b", [(tx + 0.03, y, 0.275), (tx + 0.08, y, 0.35),
+                            (entree[0] - 0.03, entree[1], entree[2] + 0.07), entree], 0.007, M_NOIR, c)
     return c
 
 # ================================================================== BROYEUR A0
@@ -437,6 +439,124 @@ def four(X):
     box("K_afficheur", (0.08, 0.004, 0.035), (X + 0.42, -0.232, zc + 0.06), M_ECRAN, c)
     box("K_support_regulateur", (0.06, 0.04, 0.04), (X + 0.30, -0.18, zc), M_CHASSIS, c)
     return c
+
+# ================================================================== POMPE A VIDE (version du commerce)
+def pompe_vide(px, py, c):
+    """Pompe a vide a membrane sans huile, type laboratoire (~30 L/min, -0,08 MPa).
+    Renvoie la position de l'embout d'aspiration."""
+    L, P, H = 0.28, 0.16, 0.19
+    z0 = 0.012
+    zt = z0 + H
+    fy = py - P / 2
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            rod("F_pompe_pied", (px + sx * 0.11, py + sy * 0.055, 0), (px + sx * 0.11, py + sy * 0.055, z0),
+                0.012, M_NOIR, c, 16)
+    box("F_pompe_socle", (L, P, 0.06), (px, py, z0 + 0.03), M_PANNEAU, c)
+    box("F_pompe_capot", (L - 0.004, P - 0.004, H - 0.06), (px, py, z0 + 0.06 + (H - 0.06) / 2), M_FOUR, c)
+    # poignee de transport
+    for sx in (-1, 1):
+        box("F_pompe_poignee_pied", (0.02, 0.03, 0.035), (px + sx * 0.07, py, zt + 0.0175), M_NOIR, c)
+    box("F_pompe_poignee", (0.16, 0.03, 0.016), (px, py, zt + 0.043), M_NOIR, c)
+    # manometre de vide en facade
+    gx, gz = px + 0.065, z0 + 0.125
+    rod("F_pompe_manometre_boitier", (gx, fy, gz), (gx, fy - 0.022, gz), 0.034, M_INOX, c, 32)
+    rod("F_pompe_manometre_cadran", (gx, fy - 0.022, gz), (gx, fy - 0.0225, gz), 0.029, M_BLANC, c, 32)
+    for i in range(9):              # graduations
+        a = math.radians(-135 + i * 33.75)
+        box("F_pompe_graduation", (0.0012, 0.0006, 0.005),
+            (gx + 0.024 * math.sin(a), fy - 0.0229, gz + 0.024 * math.cos(a)), M_NOIR, c, rot=(0, a, 0))
+    a = math.radians(-60)           # aiguille sur -0,06 MPa environ
+    box("F_pompe_aiguille", (0.0015, 0.0008, 0.024),
+        (gx + 0.010 * math.sin(a), fy - 0.0232, gz + 0.010 * math.cos(a)), M_ROUGE, c, rot=(0, a, 0))
+    rod("F_pompe_axe_aiguille", (gx, fy - 0.0225, gz), (gx, fy - 0.025, gz), 0.003, M_NOIR, c, 12)
+    # interrupteur, voyant, regulation du vide
+    box("F_pompe_interrupteur", (0.028, 0.012, 0.018), (px - 0.09, fy - 0.006, z0 + 0.03), M_ROUGE, c)
+    rod("F_pompe_voyant", (px - 0.05, fy, z0 + 0.03), (px - 0.05, fy - 0.006, z0 + 0.03), 0.005, M_ECRAN_V, c, 12)
+    rod("F_pompe_bouton_reglage", (px - 0.06, fy, z0 + 0.125), (px - 0.06, fy - 0.018, z0 + 0.125), 0.014, M_NOIR, c, 24)
+    box("F_pompe_plaque", (0.07, 0.001, 0.03), (px - 0.06, fy - 0.0005, z0 + 0.085), M_INOX, c)
+    # aerations laterales
+    for i in range(6):
+        box("F_pompe_ouie", (0.001, 0.09, 0.006), (px - L / 2 - 0.0005, py, z0 + 0.08 + i * 0.016), M_NOIR, c)
+        box("F_pompe_ouie", (0.001, 0.09, 0.006), (px + L / 2 + 0.0005, py, z0 + 0.08 + i * 0.016), M_NOIR, c)
+    # embouts d'aspiration (dessus) et de refoulement (cote droit)
+    ex, ey = px - 0.09, py - 0.035
+    rod("F_pompe_ecrou_aspiration", (ex, ey, zt), (ex, ey, zt + 0.012), 0.011, M_INOX, c, 6)
+    rod("F_pompe_embout_aspiration", (ex, ey, zt + 0.012), (ex, ey, zt + 0.04), 0.0055, M_INOX, c, 16)
+    rod("F_pompe_embout_refoulement", (px + L / 2, py + 0.03, z0 + 0.04), (px + L / 2 + 0.03, py + 0.03, z0 + 0.04),
+        0.0055, M_INOX, c, 16)
+    hose("F_pompe_cable", [(px + 0.08, py + P / 2, z0 + 0.03), (px + 0.10, py + P / 2 + 0.10, 0.006),
+                           (px + 0.30, py + 0.25, 0.006)], 0.004, M_NOIR, c)
+    return (ex, ey, zt + 0.04)
+
+
+# ================================================================== BROYEUR A0 (version realiste)
+def broyeur_reel(X):
+    """Broyeur a boulets sur rouleaux : fut acier 20 L ferme pose sur deux rouleaux
+    caoutchoutes, motoreducteur sur l'etagere, transmission sous carter de protection."""
+    c = coll("A0_Broyeur_a_boulets")
+    frame("A0_chassis", X, 0.33, 0.20, 0.46, c, rails=(0.15, 0.44))
+    box("A0_tablette_moteur", (0.70, 0.44, 0.006), (X, 0, 0.173), M_TOLE, c)
+    ZR, ZD, RD = 0.50, 0.625, 0.14
+
+    # rouleaux et paliers a semelle
+    for sy in (-1, 1):
+        y = sy * 0.10
+        rod("A0_arbre_rouleau_D20", (X - 0.37, y, ZR), (X + 0.40, y, ZR), 0.010, M_INOX, c)
+        rod("A0_gaine_caoutchouc", (X - 0.24, y, ZR), (X + 0.24, y, ZR), 0.020, M_NOIR, c)
+        for sx in (-1, 1):
+            x = X + sx * 0.33
+            box("A0_palier_semelle", (0.04, 0.11, 0.014), (x, y, 0.467), M_PLAQUE, c)
+            box("A0_palier_corps", (0.034, 0.05, 0.03), (x, y, 0.485), M_PLAQUE, c)
+            rod("A0_palier_logement", (x - 0.018, y, ZR), (x + 0.018, y, ZR), 0.028, M_PLAQUE, c, 32)
+            rod("A0_palier_graisseur", (x, y, ZR + 0.028), (x, y, ZR + 0.038), 0.003, M_INOX, c, 8)
+            for dy in (-0.04, 0.04):
+                rod("A0_palier_boulon", (x, y + dy, 0.474), (x, y + dy, 0.482), 0.006, M_INOX, c, 6)
+
+    # fut acier 20 L ferme (axe selon X), avec bourrelets de roulement et cercle de fermeture
+    rotY = (0, math.radians(90), 0)
+    lathe("A0_fut_acier_20L", [(0, -0.20), (RD, -0.20), (RD, 0.195), (0, 0.195)], M_FUT, c, (X, 0, ZD), rot=rotY)
+    for zz in (-0.20, 0.085, -0.085):
+        circ = [(RD + 0.004 * math.cos(t), zz + 0.004 * math.sin(t)) for t in [i * math.tau / 8 for i in range(8)]]
+        lathe("A0_bourrelet_fut", circ, M_FUT, c, (X, 0, ZD), rot=rotY)
+    lathe("A0_couvercle", [(0, 0.195), (RD + 0.004, 0.195), (RD + 0.004, 0.205), (0.02, 0.212), (0, 0.212)],
+          M_FUT, c, (X, 0, ZD), rot=rotY)
+    circ = [(RD + 0.008 + 0.006 * math.cos(t), 0.199 + 0.006 * math.sin(t)) for t in [i * math.tau / 10 for i in range(10)]]
+    lathe("A0_cercle_fermeture", circ, M_INOX, c, (X, 0, ZD), rot=rotY)
+    box("A0_levier_cercle", (0.03, 0.02, 0.05), (X + 0.199, -0.02, ZD + RD + 0.02), M_INOX, c)
+
+    # motoreducteur sur l'etagere
+    ym, zm = -0.10, 0.25
+    rod("A0_capot_ventilateur", (X + 0.0, ym, zm), (X + 0.03, ym, zm), 0.058, M_MOTEUR, c, 32)
+    rod("A0_moteur_250W", (X + 0.03, ym, zm), (X + 0.19, ym, zm), 0.052, M_MOTEUR, c, 32)
+    for k in range(18):             # ailettes de refroidissement longitudinales
+        a = k * math.tau / 18
+        if abs(math.cos(a)) > 0.9 and math.cos(a) < 0:
+            continue                    # pas d'ailette sous le moteur (pattes)
+        box("A0_ailette_moteur", (0.15, 0.003, 0.012),
+            (X + 0.11, ym + 0.056 * math.sin(a), zm + 0.056 * math.cos(a)), M_MOTEUR, c, rot=(-a, 0, 0))
+    box("A0_boite_a_bornes", (0.06, 0.055, 0.035), (X + 0.11, ym, zm + 0.07), M_MOTEUR, c)
+    box("A0_reducteur", (0.10, 0.11, 0.12), (X + 0.24, ym, zm), M_MOTEUR, c)
+    box("A0_pattes_moteur", (0.28, 0.12, 0.014), (X + 0.15, ym, 0.183), M_MOTEUR, c)
+    for x in (X + 0.10, X + 0.24):
+        box("A0_support_patte", (0.03, 0.09, zm - 0.06 - 0.19), (x, ym, (zm - 0.06 + 0.19) / 2), M_MOTEUR, c)
+    rod("A0_arbre_sortie", (X + 0.29, ym, zm), (X + 0.40, ym, zm), 0.009, M_INOX, c)
+
+    # carter de protection jaune sur la transmission (poulies + courroie)
+    xg0, xg1 = X + 0.365, X + 0.415
+    for z in (zm, ZR):
+        rod("A0_carter_courroie", (xg0, ym, z), (xg1, ym, z), 0.065, M_JAUNE, c, 32)
+    box("A0_carter_courroie", (xg1 - xg0, 0.13, ZR - zm), ((xg0 + xg1) / 2, ym, (zm + ZR) / 2), M_JAUNE, c)
+
+    # boitier marche / arret sur le pied avant gauche
+    bx, by, bz = X - 0.33, -0.245, 0.33
+    box("A0_boitier_commande", (0.08, 0.05, 0.11), (bx, by, bz), M_COFFRET, c)
+    rod("A0_bouton_marche", (bx, by - 0.025, bz + 0.025), (bx, by - 0.035, bz + 0.025), 0.011, M_ECRAN_V, c, 16)
+    rod("A0_bouton_arret", (bx, by - 0.025, bz - 0.02), (bx, by - 0.037, bz - 0.02), 0.013, M_ROUGE, c, 16)
+    hose("A0_cable_moteur", [(bx, by, bz - 0.055), (bx + 0.05, by + 0.04, 0.24),
+                             (X + 0.11, ym - 0.06, zm + 0.10), (X + 0.11, ym, zm + 0.0875)], 0.004, M_NOIR, c)
+    return c
+
 
 # ================================================================== FOUR K (version du commerce)
 def helice(name, p0, length, r, pitch, wire, m, c):
@@ -588,7 +708,7 @@ def four_moufle(X):
 # ================================================================== SCENE
 X_A0, X_R1, X_F, X_R2, X_K = -2.35, -0.85, 0.0, 0.85, 2.45
 
-broyeur(X_A0)
+broyeur_reel(X_A0)
 reactor("R1_Attaque", X_R1, +1, cut=True, co2=False, liq_rgb=(0.40, 0.10, 0.05), liq_alpha=0.95)
 filtre(X_F)
 reactor("R2_Precipitation", X_R2, -1, cut=True, co2=True)

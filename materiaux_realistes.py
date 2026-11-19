@@ -335,6 +335,8 @@ RECETTES = {
     "Peinture four": peinture((0.56, 0.57, 0.55), 0.42, 0.1),     # tole peinte epoxy, gris clair RAL 7035
     "Panneau commande": peinture((0.035, 0.04, 0.045), 0.45, 0.2),  # anthracite
     "Fibre ceramique": fibre_ceramique,
+    "Peinture fut": peinture((0.008, 0.035, 0.11), 0.4, 0.3),        # fut acier peint bleu
+    "Peinture jaune": peinture((0.85, 0.40, 0.0), 0.4, 0.2),         # carter de securite
     "Afficheur vert": afficheur_vert,
     "Piege transparent": verre,
     "R1_Attaque_mat_liquide": pulpe_rouge,
