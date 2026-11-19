@@ -93,6 +93,9 @@ But : poudre sèche passant au tamis de 250 µm. Plus c'est fin, plus l'attaque 
    - Vitesse : 55–60 tr/min (≈ 70 % de la vitesse critique 42,3/√D).
    - Entraînement : tambour posé sur 2 arbres Ø 20 mm gainés de caoutchouc, montés sur 4 paliers ; un arbre entraîné par motoréducteur 180–250 W avec courroie.
    - Durée : 1–2 h.
+   - **Couvercle à charnière** : le couvercle cerclé du fût est monté sur une charnière verticale (côté arrière), il s'ouvre comme une porte sans être posé au sol.
+   - **Chargement : chariot à trémie** : trémie carrée inox (300 × 300 mm en haut) + goulotte en U inclinée à 44°, longueur 450 mm, sur un poteau à base roulante. On l'avance jusqu'à ce que le bout de la goulotte entre dans l'ouverture du fût, on verse la bauxite puis les billes dans la trémie, on recule le chariot et on referme.
+   - **Vidange : grille + bac** : on pose une grille (barreaux tous les 35 mm) dans l'ouverture pour retenir les billes, on soulève le fût et on l'incline au-dessus d'un bac de récupération inox (≈ 10 L) ; la poudre tombe, les billes restent dans le fût.
 4. **Tamisage** à 250 µm (tamis 60 mesh) ; le refus retourne au broyeur.
 
 Masque FFP3 pendant le broyage et le tamisage.
@@ -127,7 +130,8 @@ Masque FFP3 pendant le broyage et le tamisage.
 |---|---|---|
 | Cuve | Marmite inox 304 ou 316, 50 L, fond sandwich | Volume utile 18–30 L, le reste est de la garde contre les débordements |
 | Vannes (×2) | Robinet à boisseau sphérique inox DN25 **passage intégral**, sièges PTFE | Montage par manchon soudé TIG, ou traversée de paroi vissée avec joints PTFE/EPDM |
-| Couvercle | Inox, percé : arbre (Ø 20 avec bague PTFE), trappe Ø 100, doigt de gant, évent Ø 25 | L'évent part vers l'extérieur ; la cuve reste toujours à pression atmosphérique |
+| Couvercle | Inox, percé : arbre (Ø 20 avec bague PTFE), trappe de chargement Ø 76, doigt de gant, évent Ø 25 | L'évent part vers l'extérieur ; la cuve reste toujours à pression atmosphérique |
+| Trappe de chargement | Collerette inox Ø 76 × 30 mm soudée sur le trou + couvercle Ø 100 à charnière (côté extérieur) et bouton | Tout entre par là : l'eau (tuyau), la soude, la poudre de bauxite ; sur R2, le tuyau de la liqueur |
 | Agitateur | Motoréducteur 150–250 W à vitesse variable ; arbre inox Ø 14 × 450 mm ; turbine 4 pales inclinées Ø 130 mm, à 60 mm du fond | Sens : pousse vers le bas |
 | Chicanes | 3 plats inox 35 × 300 mm accrochés au bord | Facultatif mais empêche le vortex et les dépôts |
 | Chauffage | Plaque électrique résistive 2,5–3 kW | Résistive (pas induction) pour pouvoir la piloter par relais |
@@ -167,12 +171,16 @@ bouteille de CO₂ 10 kg (alimentaire ou soudage) posée sur une balance → dé
 - **Récepteur** : fût à bière inox (conçu pour la pression, il tient le vide). Ne pas utiliser de seau plastique ni de marmite à paroi mince sous vide avec du liquide chaud.
 - **Toiles** : une toile PP ~5–10 µm réservée aux boues rouges, une toile PP ~10–25 µm réservée à l'hydrate blanc. Ne jamais les mélanger, sinon l'alumine sera rose.
 - **Version économique sans vide** : poche filtrante PP 5 µm suspendue dans un seau inox. Ça marche, mais les boues rouges mettent plusieurs heures à s'égoutter.
+- **Sortie des gâteaux** : la galette (boue rouge, puis hydrate) sort par le haut de la cuve filtrante, avec sa toile.
+- **Vidange du récepteur et transfert vers R2** : piquage inox au bas du fût + petite vanne à boisseau, tuyau vers une petite pompe de transfert (pompe centrifuge inox ou pompe à membrane, ≈ 10–20 L/min, compatible soude), puis tuyau qui entre dans R2 par sa trappe de chargement. La liqueur ne remonte pas toute seule d'environ 1,3 m : il faut cette pompe (ou la transvaser au seau).
 
 ---
 
 ## 6. Appareil K — Four de calcination
 
-**Option recommandée : four de potier électrique d'occasion** (chargement par le dessus, 40–60 L, 1200–1300 °C, avec programmateur). C'est la pièce la plus difficile à fabriquer soi-même et il s'en trouve facilement.
+**Option recommandée : four à moufle de laboratoire 1200 °C du commerce** (« box muffle furnace », chambre ≈ 230 × 230 × 300 mm, 12–15 L, 220 V, régulateur à rampes intégré, porte à charnière). C'est le four représenté dans le modèle 3D et la solution la plus simple depuis le Cameroun (voir §14). Un four de potier électrique d'occasion (40–60 L, 1200–1300 °C) convient aussi. C'est la pièce la plus difficile à fabriquer soi-même.
+
+**Table de préparation** : à côté du four, une petite table dont le plateau est à la hauteur de la sole de la chambre. On y remplit le creuset d'hydrate, puis on le fait glisser à plat jusque dans le four par la porte, et on l'y ressort de la même façon (gants et pince à creuset : il ressort chaud).
 
 **Option à construire** (ordre de grandeur, à détailler avant fabrication) :
 
@@ -274,6 +282,7 @@ La soude à 220 g/L et 100 °C est le danger principal : une projection dans l'�
 - **Électricité** : chaque appareil de 3 kW sur son propre circuit 16 A avec différentiel 30 mA ; coffrets hors zone d'éclaboussures.
 - **Boues rouges** : pH 11–14 à la sortie. Les laver, puis les neutraliser à pH 8–9 (barbotage de CO₂ dans la boue délayée, ou acide dilué ajouté lentement), sécher, stocker en fût fermé, évacuer selon la réglementation locale. Certaines bauxites concentrent des métaux lourds dans les boues.
 - **Poussières** : masque FFP3 pour le broyage, le chargement de la soude en perles et la manipulation de l'alumine.
+- **Étiquetage** : chaque seau, pot et bac porte le nom de son contenu (BAUXITE, POUDRE DE BAUXITE, SOUDE NaOH en rouge, BOUES ROUGES, EAU…). Une confusion entre un seau de soude et un seau d'eau est un accident grave.
 
 ---
 
@@ -368,12 +377,17 @@ Sans laboratoire d'analyse, la pureté réelle ne peut pas être garantie ; un c
 
 | Fichier | Contenu |
 |---|---|
-| `usine-bauxite-alumine.blend` | Scène Blender à l'échelle 1:1 (mètres), une collection par appareil, chaque pièce nommée |
+| `usine-bauxite-alumine-realiste.blend` | Modèle réaliste à l'échelle 1:1 (mètres), une collection par appareil, chaque pièce nommée, matériaux réels |
+| `usine-bauxite-alumine-animation.blend` | Animation du procédé (≈ 1 min 45) : chaque produit entre et sort par une vraie ouverture |
 | `construire_usine.py` | Script qui régénère toute la scène ; les cotes sont en tête de chaque fonction, modifiables |
-| `rendu-vue-ensemble.png` | Vue des 5 appareils |
-| `rendu-cuves-filtre.png` | Vue rapprochée R1 – filtre – R2 (R2 en coupe) |
+| `materiaux_realistes.py` | Matériaux réels (inox brossé, acier brut, fonte, fibre céramique…), lumière, caméras |
+| `animer_usine.py` | Script qui reconstruit la scène et crée l'animation |
+| `rendu-realiste-*.png` | Vues d'ensemble et de détail (broyeur, cuves + filtre, pompe à vide, four) |
+| `usine-bauxite-alumine.blend`, `rendu-vue-ensemble.png`, `rendu-cuves-filtre.png` | Première version (couleurs de schéma), gardée pour mémoire |
 
-Implantation retenue : le filtre est placé **entre** les deux cuves, dont les vannes se font face. R1 puis R2 s'y vident par gravité, sans pompe.
+Implantation retenue : le filtre est placé **entre** les deux cuves, dont les vannes se font face. R1 puis R2 s'y vident par gravité dans le filtre. Seul le retour de la liqueur du filtre vers R2 demande une petite pompe de transfert.
+
+Équipements ajoutés pour que les transferts se fassent proprement : chariot à trémie du broyeur, couvercle de fût à charnière, grille de vidange, bac de récupération, trappes de chargement à charnière sur R1 et R2, arrivée d'eau avec robinet, vanne de vidange et pompe de transfert sur le filtre, table de préparation à côté du four, étiquettes sur tous les récipients.
 
 ---
 

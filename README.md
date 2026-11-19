@@ -21,13 +21,16 @@ Atelier discontinu pour transformer **5 kg de bauxite** (gibbsitique, Cameroun) 
 | `materiaux_realistes.py` | Script Blender qui applique les matériaux réels, la lumière et les caméras |
 | `usine-bauxite-alumine-realiste.blend` | Modèle 3D réaliste prêt à ouvrir |
 | `usine-bauxite-alumine.blend` | Première version du modèle (couleurs de schéma) |
-| `animer_usine.py`, `usine-bauxite-alumine-animation.blend` | Animation explicative du procédé (60 s), faite sur une version antérieure du modèle |
+| `animer_usine.py`, `usine-bauxite-alumine-animation.blend` | Animation du procédé (≈ 1 min 45) sur le modèle réaliste : chaque produit entre et sort par une vraie ouverture, récipients étiquetés |
 | `exporter_video.cmd`, `exporter_video.py` | Export de l'animation en MP4 (Blender + ffmpeg) |
 | `rendu-*.png` | Images calculées |
 
 ## Regénérer le modèle
 
-Dans Blender 5.2, onglet **Scripting** : ouvrir et exécuter `construire_usine.py`, puis `materiaux_realistes.py`.
+Dans Blender 5.2, onglet **Scripting** :
+
+- modèle fixe : ouvrir et exécuter `construire_usine.py`, puis `materiaux_realistes.py` ;
+- animation : ouvrir et exécuter `animer_usine.py` (il lance lui-même les deux autres scripts, qui doivent être dans le même dossier).
 
 ## Avertissement
 
