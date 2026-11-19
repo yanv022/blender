@@ -19,6 +19,7 @@ ns = {"__name__": "build"}
 _executer("construire_usine.py", ns)
 _executer("materiaux_realistes.py", {"__name__": "materiaux"})
 lathe, rod, ball, box, mat, coll, hose = (ns[k] for k in ("lathe", "rod", "ball", "box", "mat", "coll", "hose"))
+etiquette = ns["etiquette"]
 X_A0, X_R1, X_F, X_R2, X_K = (ns[k] for k in ("X_A0", "X_R1", "X_F", "X_R2", "X_K"))
 D = bpy.data.objects
 sc = bpy.context.scene
@@ -267,7 +268,8 @@ for i in range(18):
     rr_ = rnd2.uniform(0, 0.055)
     tas.append(caillou("SIM_bauxite_brute", (BX + rr_ * math.cos(a_), BY + rr_ * math.sin(a_),
                                              0.035 + (i // 6) * 0.05 + rnd2.uniform(0, 0.02)), rnd2.uniform(0.022, 0.034)))
-adopt(seau_b, tas)
+adopt(seau_b, tas + etiquette("SIM_seau_bauxite_etiquette", "BAUXITE", (BX, BY, 0), 0.09, 0.105, 0.17,
+                              0.03, 0.15, 0.19, sim, taille=0.042))
 o_seau = P_TREMIE - bascule(0.105, 0.17)
 porter(seau_b, [(1, (BX, BY, 0), (0, 0, 0)), (92, (BX, BY, 0), None), (108, (BX, BY, 1.32), None),
                 (128, (o_seau.x, o_seau.y, 1.32), (0, 0, 0)), (134, o_seau, None), (146, o_seau, (rad(-110), 0, 0)),
@@ -279,15 +281,16 @@ flux("SIM_flux_bauxite", GLISSE, 9, 146, 198, caillou, periode=24)
 
 # bac de billes d'acier
 TX, TY = X_A0 + 0.30, -0.45
-bac_b = lathe("SIM_bac_billes", [(0, 0), (0.075, 0), (0.085, 0.06), (0.082, 0.06), (0.072, 0.003), (0, 0.003)],
+bac_b = lathe("SIM_bac_billes", [(0, 0), (0.075, 0), (0.085, 0.09), (0.082, 0.09), (0.072, 0.003), (0, 0.003)],
               ns["M_TOLE"], sim, (TX, TY, 0))
 tas_b = []
 for i in range(10):
     a_ = rnd2.uniform(0, math.tau)
     rr_ = rnd2.uniform(0, 0.045)
     tas_b.append(bille("SIM_bille_tas", (TX + rr_ * math.cos(a_), TY + rr_ * math.sin(a_), 0.02 + (i // 5) * 0.025)))
-adopt(bac_b, tas_b)
-o_bac = P_TREMIE - bascule(0.085, 0.06)
+adopt(bac_b, tas_b + etiquette("SIM_bac_billes_etiquette", "BILLES\nD'ACIER", (TX, TY, 0), 0.075, 0.085, 0.09,
+                               0.01, 0.08, 0.16, sim, taille=0.024))
+o_bac = P_TREMIE - bascule(0.085, 0.09)
 porter(bac_b, [(1, (TX, TY, 0), (0, 0, 0)), (246, (TX, TY, 0), None), (258, (TX, TY, 1.24), None),
                (274, (o_bac.x, o_bac.y, 1.24), (0, 0, 0)), (278, o_bac, None), (288, o_bac, (rad(-110), 0, 0)),
                (318, o_bac, (rad(-110), 0, 0)), (326, o_bac, (0, 0, 0)), (330, (o_bac.x, o_bac.y, 1.24), None),
@@ -317,7 +320,7 @@ visible(jet_a0, 650, 700)
 e_bin = empty("SIM_bac_poudre", BAC)
 poudre_bin = lathe("SIM_poudre_dans_bac", [(0, 0), (0.10, 0), (0.111, 0.11), (0, 0.11)], ns["M_BAUX"], sim,
                    (BAC.x, BAC.y, 0.004))
-adopt(e_bin, [D["A0_bac_poudre"], poudre_bin])
+adopt(e_bin, named("A0_bac_poudre") + [poudre_bin])        # bac + son etiquette
 level(poudre_bin, ((1, 0), (652, 0), (700, 1.0), (1068, 1.0), (1110, 0)))
 
 # ================================================================== 4. CHARGEMENT de R1 (780-1170) par la trappe
@@ -363,7 +366,8 @@ SX, SY = X_R1 - 0.45, -0.62
 pot = lathe("SIM_pot_soude", [(0, 0), (0.08, 0), (0.085, 0.15), (0.082, 0.15), (0.077, 0.004), (0, 0.004)],
             ns["M_BLANC"], sim, (SX, SY, 0))
 tas_s = lathe("SIM_soude_paillettes", [(0, 0), (0.077, 0), (0.080, 0.11), (0, 0.11)], ns["M_BLANC"], sim, (SX, SY, 0.004))
-adopt(pot, [tas_s])
+adopt(pot, [tas_s] + etiquette("SIM_pot_soude_etiquette", "SOUDE\nNaOH", (SX, SY, 0), 0.08, 0.085, 0.15,
+                               0.02, 0.135, 0.15, sim, taille=0.038, m_txt=ns["M_DANGER"]))
 o_pot = P_R1 - bascule(0.085, 0.15)
 porter(pot, [(1, (SX, SY, 0), (0, 0, 0)), (880, (SX, SY, 0), None), (892, (SX, SY, 1.66), None),
              (910, (o_pot.x, o_pot.y, 1.66), (0, 0, 0)), (914, o_pot, None), (924, o_pot, (rad(-110), 0, 0)),
@@ -450,6 +454,8 @@ gat_b = lathe("SIM_gateau_boue_rouge", [(0, 0), (0.162, 0), (0.162, 0.032), (0, 
 level(gat_b, ((1, 0), (1520, 0), (1585, 1)))
 lathe("SIM_bac_boues_rouges", [(0, 0), (0.19, 0), (0.21, 0.18), (0.205, 0.18), (0.186, 0.004), (0, 0.004)],
       ns["M_BAC"], sim, (-0.55, -0.85, 0))
+etiquette("SIM_bac_boues_etiquette", "BOUES\nROUGES", (-0.55, -0.85, 0), 0.19, 0.21, 0.18, 0.025, 0.16, 0.30,
+          sim, taille=0.045, az=-80)
 porter(gat_b, [(1595, (X_F, 0, 0.553), None), (1612, (X_F, 0, 1.0), None), (1638, (-0.55, -0.85, 1.0), None),
                (1655, (-0.55, -0.85, 0.03), None)])
 
@@ -523,6 +529,10 @@ porter(e_gaz, [(1, TABLE, None), (2210, TABLE, None), (2216, (TABLE.x, TABLE.y, 
                (2236, DEVANT, None), (2256, (xcK, ycK, 0.64), None), (2262, (xcK, ycK, 0.628), None),
                (2420, (xcK, ycK, 0.628), None), (2426, (xcK, ycK, 0.64), None), (2444, DEVANT, None),
                (2462, (TABLE.x, TABLE.y, 0.64), None), (2468, TABLE, None)])
+# chevalet "ALUMINE" pose sur la table quand le produit fini revient
+for ob in etiquette("SIM_chevalet_alumine", "ALUMINE\nAl2O3", (TABLE.x, TABLE.y - 0.12, TABLE.z), 0.0, 0.0, 1.0,
+                    0.0, 0.10, 0.18, sim, taille=0.036, az=-80):
+    visible(ob, 2468)
 
 # ================================================================== 13-14. CALCINATION et REFROIDISSEMENT
 e_porte = empty("SIM_rot_porte", (X_K - 0.28, -0.23, 0.80))
@@ -565,7 +575,11 @@ for i in range(7):
 
 # ================================================================== CAMERA
 cam = sc.camera
-cam.data.lens = 35
+# cadrage : objectif un peu plus large et image decalee vers le haut, pour laisser en bas
+# un bandeau noir reserve aux legendes, qui ne recouvre que le sol
+cam.data.lens = 28
+cam.data.shift_y = -0.0565
+cam.data.clip_start = 0.05
 cible = empty("SIM_cible_camera", (0.05, 0, 0.85))
 con = cam.constraints.new('TRACK_TO')
 con.target = cible
@@ -573,12 +587,12 @@ con.track_axis = 'TRACK_NEGATIVE_Z'
 con.up_axis = 'UP_Y'
 plans = (
     ((1, 30),       (0.4, -7.7, 2.9),     (0.05, 0, 0.85)),       # vue d'ensemble
-    ((58, 372),     (-1.25, -1.85, 1.45), (-2.05, -0.12, 0.72)),  # entree dans le broyeur
-    ((392, 770),    (-1.20, -2.10, 1.25), (-1.95, -0.25, 0.55)),  # broyage + vidange
-    ((790, 1160),   (-0.30, -2.30, 1.85), (-1.05, -0.15, 1.05)),  # chargement de R1
+    ((58, 372),     (-0.95, -2.55, 1.60), (-2.00, -0.22, 0.60)),  # entree dans le broyeur
+    ((392, 770),    (-0.95, -2.65, 1.40), (-1.95, -0.30, 0.50)),  # broyage + vidange
+    ((790, 1160),   (-0.15, -3.15, 2.10), (-1.10, -0.25, 1.00)),  # chargement de R1
     ((1175, 1400),  (-0.55, -2.50, 1.75), (-0.85, 0.00, 1.10)),   # attaque, decantation
-    ((1415, 1655),  (-0.35, -2.90, 1.60), (-0.40, 0.00, 0.75)),   # filtration, boue rouge
-    ((1668, 2110),  (0.45, -2.90, 1.70),  (0.45, 0.00, 0.85)),    # transfert, precipitation, filtration
+    ((1415, 1655),  (-0.35, -3.20, 1.65), (-0.40, -0.25, 0.60)),  # filtration, boue rouge
+    ((1668, 2110),  (0.45, -3.20, 1.75),  (0.45, -0.20, 0.70)),   # transfert, precipitation, filtration
     ((2125, 2200),  (1.55, -3.90, 2.00),  (1.55, -0.25, 0.80)),   # hydrate -> creuset
     ((2212, 2445),  (2.90, -2.15, 1.35),  (2.68, -0.20, 0.72)),   # four
     ((2470, 2520),  (3.30, -1.55, 1.25),  (2.95, -0.10, 0.65)),   # alumine sur la table
@@ -590,11 +604,12 @@ for (fa, fb), pc, pt in plans:
 
 # ================================================================== LEGENDES a l'ecran
 M_HUD = mat("SIM_texte_ecran", (1, 1, 1), 0, 0.5, emit=1.5)
-M_BANDE = mat("SIM_bandeau", (0, 0, 0), 0, 0.9, alpha=0.6)
-bande = box("SIM_bandeau", (1.04, 0.062, 0.001), (0, 0, 0), M_BANDE, sim)
+M_BANDE = mat("SIM_bandeau", (0.012, 0.012, 0.015), 0, 1.0)
+DH = 0.3                                   # distance du bandeau a la camera (rien ne passe devant)
+YB = -0.3917 * DH                          # centre du bandeau : tout en bas de l'image
+bande = box("SIM_bandeau", (1.32 * DH, 0.086 * DH, 0.0005), (0, 0, 0), M_BANDE, sim)
 bande.parent = cam
-bande.visible_shadow = False
-bande.location = (0, -0.236, -1.004)
+bande.location = (0, YB, -DH - 0.002)
 legendes = (
     (1,    "De la bauxite à l'alumine  -  lot de 5 kg"),
     (40,   "1. ENTRÉE  -  on ouvre le fût, le chariot à trémie s'avance"),
@@ -622,16 +637,21 @@ legendes = (
 for i, (f0, txt) in enumerate(legendes):
     cu = bpy.data.curves.new(f"SIM_legende_{i:02d}", 'FONT')
     cu.body = txt
-    cu.size = 0.027
+    cu.size = 0.032 * DH
     cu.align_x = 'CENTER'
+    cu.align_y = 'CENTER'
     cu.materials.append(M_HUD)
     ob = bpy.data.objects.new(f"SIM_legende_{i:02d}", cu)
     sim.objects.link(ob)
     ob.parent = cam
-    ob.visible_shadow = False
-    ob.location = (0, -0.245, -1.0)
+    ob.location = (0, YB, -DH)
     f1 = legendes[i + 1][0] if i + 1 < len(legendes) else None
     visible(ob, f0, f1)
+
+for ob in [bande] + named("SIM_legende_"):    # ni ombre ni reflet dans les metaux
+    for p in ("visible_shadow", "visible_glossy", "visible_diffuse", "visible_transmission", "visible_volume_scatter"):
+        if hasattr(ob, p):
+            setattr(ob, p, False)
 
 apply_interpolations()
 

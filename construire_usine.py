@@ -69,6 +69,9 @@ M_FIBRE  = mat("Fibre ceramique", (0.80, 0.77, 0.70), 0.0, 0.95)
 M_ECRAN_V= mat("Afficheur vert", (0.1, 1.0, 0.2), 0.0, 0.4, emit=3.0)
 M_FUT    = mat("Peinture fut", (0.01, 0.04, 0.12), 0.0, 0.4)
 M_JAUNE  = mat("Peinture jaune", (0.85, 0.40, 0.0), 0.0, 0.4)
+M_ETIQ   = mat("Etiquette", (0.86, 0.86, 0.83), 0.0, 0.6)
+M_ETIQ_T = mat("Texte etiquette", (0.015, 0.015, 0.015), 0.0, 0.5)
+M_DANGER = mat("Texte danger", (0.55, 0.01, 0.01), 0.0, 0.5)
 
 # ------------------------------------------------------------------ outils
 def coll(name):
@@ -169,6 +172,33 @@ def hose(name, pts, r, m, c):
     ob = bpy.data.objects.new(name, cu)
     c.objects.link(ob)
     return ob
+
+def etiquette(nom, texte, base, r_bas, r_haut, h, z0, z1, larg, c, taille=0.022, m_txt=None, az=-55):
+    """Etiquette blanche collee sur un recipient (conique ou cylindrique).
+    base = centre du fond ; z0..z1 = hauteur de l'etiquette au-dessus du fond ;
+    az = direction de la face etiquetee en degres (-90 = face avant, -55 = avant-droite, cote cameras)."""
+    zc = (z0 + z1) / 2
+    r = r_bas + (r_haut - r_bas) * zc / h
+    pente = math.atan2(r_haut - r_bas, h)
+    x, y, zb = base
+    a = math.radians(az)
+    u = Vector((math.cos(a), math.sin(a), 0))
+    rz = a + math.pi / 2
+    p = Vector((x, y, zb + zc)) + u * (r + 0.002)
+    plaque = box(nom, (larg, 0.0015, z1 - z0), p, M_ETIQ, c, rot=(pente, 0, rz))
+    cu = bpy.data.curves.new(nom + "_texte", 'FONT')
+    cu.body = texte
+    cu.size = taille
+    cu.offset = taille * 0.035              # lettres epaissies : lisibles de loin
+    cu.align_x = 'CENTER'
+    cu.align_y = 'CENTER'
+    cu.materials.append(m_txt or M_ETIQ_T)
+    t = bpy.data.objects.new(nom + "_texte", cu)
+    t.location = Vector((x, y, zb + zc)) + u * (r + 0.0035)
+    t.rotation_euler = (math.pi / 2 + pente, 0, rz)
+    c.objects.link(t)
+    return [plaque, t]
+
 
 def label(name, txt, loc, size, c):
     cu = bpy.data.curves.new(name, 'FONT')
@@ -339,6 +369,8 @@ def reactor(tag, X, side, cut, co2, liq_rgb=(0.92, 0.93, 0.95), liq_alpha=0.45):
         lathe(tag + "_bouteille_CO2_10kg",
               [(0, 0.055), (0.07, 0.055), (0.07, 0.70), (0.055, 0.76), (0.03, 0.80),
                (0.02, 0.82), (0.02, 0.86), (0, 0.86)], M_CO2, c, (bxc, byc, 0))
+        etiquette(tag + "_bouteille_CO2_etiquette", "CO2", (bxc, byc, 0), 0.07, 0.07, 1.0, 0.36, 0.54, 0.10,
+                  c, taille=0.055, az=-115)
         box(tag + "_robinet_bouteille", (0.04, 0.04, 0.05), (bxc, byc, 0.885), M_INOX, c)
         rod(tag + "_detendeur", (bxc, byc, 0.885), (bxc, byc - 0.08, 0.885), 0.025, M_INOX, c)
         for dx in (-0.035, 0.035):
@@ -581,6 +613,8 @@ def broyeur_reel(X):
     # bac de recuperation de la poudre (pose au sol, a droite devant)
     lathe("A0_bac_poudre", [(0, 0), (0.10, 0), (0.12, 0.22), (0.117, 0.22), (0.097, 0.003), (0, 0.003)],
           M_TOLE, c, (X + 0.65, -0.45, 0))
+    etiquette("A0_bac_poudre_etiquette", "POUDRE DE\nBAUXITE", (X + 0.65, -0.45, 0), 0.10, 0.12, 0.22,
+              0.04, 0.19, 0.20, c, taille=0.034)
 
     # chariot de chargement : tremie + goulotte inclinee a 44 degres, gare a droite du broyeur
     # (en service, le bout de la goulotte entre dans l'ouverture du fut : on le recule de 0,40 m)
@@ -810,6 +844,7 @@ rod("Robinet_colonne", (rx, ry, 0.01), (rx, ry, 0.88), 0.016, M_TOLE, c_eau, 16)
 rod("Robinet_corps", (rx, ry, 0.86), (rx, ry - 0.06, 0.86), 0.014, M_INOX, c_eau, 16)
 rod("Robinet_bec", (rx, ry - 0.06, 0.86), (rx, ry - 0.06, 0.83), 0.009, M_INOX, c_eau, 12)
 box("Robinet_manette", (0.06, 0.012, 0.008), (rx, ry - 0.03, 0.885), M_ROUGE, c_eau)
+etiquette("Robinet_etiquette", "EAU", (rx, ry, 0), 0.016, 0.016, 1.0, 0.62, 0.72, 0.11, c_eau, taille=0.05)
 
 env = coll("Atelier")
 box("Sol", (7.6, 3.6, 0.02), (0.1, 0, -0.011), M_SOL, env)
