@@ -3,7 +3,5 @@
 *.blend@
 # Python
 __pycache__/
-# Videos et images temporaires
-*.mp4
-# Morceaux intermediaires du montage video
+# Morceaux intermediaires du montage video (les videos finies, elles, sont versionnees)
 video/montage-tmp/
