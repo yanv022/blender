@@ -5,3 +5,5 @@
 __pycache__/
 # Videos et images temporaires
 *.mp4
+# Morceaux intermediaires du montage video
+video/montage-tmp/
